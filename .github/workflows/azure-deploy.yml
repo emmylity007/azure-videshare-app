@@ -6,7 +6,7 @@ on:
       - main  # Trigger deployment on push to main branch
 
 env:
-  AZURE_WEBAPP_NAME: 'videshare-ckgwb0agebfpfqgy'   # <--- UPDATE THIS to your actual Azure Web App name
+  AZURE_WEBAPP_NAME: 'videshare'   # <--- UPDATE THIS to your actual Azure Web App name
   NODE_VERSION: '20.x'                # set this to the node version to use
 
 jobs:

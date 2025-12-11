@@ -1,0 +1,34 @@
+name: Deploy Node.js to Azure Web App
+
+on:
+  push:
+    branches:
+      - main  # Trigger deployment on push to main branch
+
+env:
+  AZURE_WEBAPP_NAME: YOUR-WEB-APP-NAME-HERE   # <--- UPDATE THIS to your actual Azure Web App name
+  NODE_VERSION: '18.x'                # set this to the node version to use
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: npm install, build, and test
+        run: |
+          npm install
+          npm run build --if-present
+
+      - name: 'Deploy to Azure Web App'
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: .

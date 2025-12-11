@@ -1,3 +1,6 @@
+const appInsights = require('applicationinsights');
+appInsights.setup().start();
+
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
@@ -64,17 +67,17 @@ app.get('/api/sas-token', async (req, res) => {
             permissions: BlobSASPermissions.parse("w"), // Write permission
             expiresOn: new Date(new Date().valueOf() + 3600 * 1000) // 1 hour
         };
-        
+
         // We need the key to sign the SAS token. 
         // Parsing connection string is a bit manual if we don't have the shared key credential object directly sometimes, 
         // but BlobServiceClient handles many things. However, generateBlobSASQueryParameters needs a credential.
-        
+
         // Extract account name and key from connection string for SAS generation
         // A simple way to get a SAS url is utilizing the blob client if authorized with SharedKey
-        const sasToken = await blobClient.generateSasUrl(sasOptions); 
+        const sasToken = await blobClient.generateSasUrl(sasOptions);
         // Note: generateSasUrl might not work directly if not authenticated with SharedKeyCredential in the client factory.
         // Let's re-instantiate specifically for SAS generation if needed, or rely on the fact that fromConnectionString usually sets up the credential.
-        
+
         // Actually, let's do it explicitly to be safe:
         // Parse connection string
         const matches = AZURE_STORAGE_CONNECTION_STRING.match(/AccountName=([^;]+);AccountKey=([^;]+)/);
@@ -82,9 +85,9 @@ app.get('/api/sas-token', async (req, res) => {
         const accountName = matches[1];
         const accountKey = matches[2];
         const sharedKeyCredential = new StorageSharedKeyCredential(accountName, accountKey);
-        
+
         const sasTokenParams = generateBlobSASQueryParameters(sasOptions, sharedKeyCredential);
-        
+
         const sasUrl = `${blobClient.url}?${sasTokenParams.toString()}`;
 
         res.json({ sasUrl, uploadUrl: sasUrl }); // sending sasUrl which is full URL with SAS token
@@ -98,7 +101,7 @@ app.get('/api/sas-token', async (req, res) => {
 app.post('/api/video-metadata', async (req, res) => {
     try {
         const { title, description, filename, blobUrl } = req.body;
-        
+
         if (!cosmosContainer) return res.status(503).send("Database not initialized");
 
         const newItem = {

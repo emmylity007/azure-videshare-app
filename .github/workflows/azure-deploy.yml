@@ -6,8 +6,8 @@ on:
       - main  # Trigger deployment on push to main branch
 
 env:
-  AZURE_WEBAPP_NAME: YOUR-WEB-APP-NAME-HERE   # <--- UPDATE THIS to your actual Azure Web App name
-  NODE_VERSION: '18.x'                # set this to the node version to use
+  AZURE_WEBAPP_NAME: 'videsocial-app'   # <--- UPDATE THIS to your actual Azure Web App name
+  NODE_VERSION: '20.x'                # set this to the node version to use
 
 jobs:
   build-and-deploy:

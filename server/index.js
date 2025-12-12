@@ -1,7 +1,12 @@
-const appInsights = require('applicationinsights');
-appInsights.setup().start();
+require('dotenv').config(); // Load env vars FIRST
 
-require('dotenv').config();
+const appInsights = require('applicationinsights');
+// Only start App Insights if connection string is present
+if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
+    appInsights.setup().start();
+} else {
+    console.log("App Insights skipped (no connection string)");
+}
 const express = require('express');
 const path = require('path');
 const { BlobServiceClient, StorageSharedKeyCredential, generateBlobSASQueryParameters, BlobSASPermissions } = require('@azure/storage-blob');
@@ -22,39 +27,127 @@ const AZURE_COSMOS_KEY = process.env.AZURE_COSMOS_KEY;
 const AZURE_COSMOS_DATABASE = process.env.AZURE_COSMOS_DATABASE || 'VideSocialDB';
 const AZURE_COSMOS_CONTAINER = process.env.AZURE_COSMOS_CONTAINER || 'VideoMetadata';
 
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+
+// ... [Existing Imports]
+
+const AZURE_COSMOS_USERS_CONTAINER = 'Users';
+const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey'; // Use env in prod
+
 // Initialize Cosmos Client
 let cosmosContainer;
-async function initCosmos() {
-    if (!AZURE_COSMOS_ENDPOINT || !AZURE_COSMOS_KEY) {
-        console.warn("Cosmos DB credentials not found. Metadata storage will fail.");
-        return;
+let usersContainer;
+
+async function initApp() {
+    try {
+        if (!AZURE_COSMOS_ENDPOINT || !AZURE_COSMOS_KEY) {
+            console.warn("Cosmos DB credentials not found. Metadata storage will fail.");
+            return;
+        }
+        const client = new CosmosClient({ endpoint: AZURE_COSMOS_ENDPOINT, key: AZURE_COSMOS_KEY });
+        const { database } = await client.databases.createIfNotExists({ id: AZURE_COSMOS_DATABASE });
+
+        const { container: vContainer } = await database.containers.createIfNotExists({ id: AZURE_COSMOS_CONTAINER, partitionKey: '/id' });
+        cosmosContainer = vContainer;
+
+        const { container: uContainer } = await database.containers.createIfNotExists({ id: AZURE_COSMOS_USERS_CONTAINER, partitionKey: '/id' });
+        usersContainer = uContainer; // Ensure this is assigned!
+
+        console.log("Cosmos DB initialized (Videos & Users)");
+
+        // Start Server ONLY after DB is ready
+        app.listen(PORT, () => {
+            console.log(`Server running on http://localhost:${PORT}`);
+        });
+
+    } catch (err) {
+        console.error("Failed to initialize Cosmos DB:", err);
     }
-    const client = new CosmosClient({ endpoint: AZURE_COSMOS_ENDPOINT, key: AZURE_COSMOS_KEY });
-    const { database } = await client.databases.createIfNotExists({ id: AZURE_COSMOS_DATABASE });
-    const { container } = await database.containers.createIfNotExists({ id: AZURE_COSMOS_CONTAINER });
-    cosmosContainer = container;
-    console.log("Cosmos DB initialized");
 }
-initCosmos().catch(console.error);
+initApp();
 
-// Ensure Blob Container Exists
-async function initBlobStorage() {
-    if (!AZURE_STORAGE_CONNECTION_STRING) {
-        console.warn("Azure Storage Connection String not found. Uploads will fail.");
-        return;
+// Middleware: Authenticate Token
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+    if (token == null) return res.sendStatus(401);
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) return res.sendStatus(403);
+        req.user = user;
+        next();
+    });
+}
+
+// ... [Blob Storage Init]
+
+// API: Auth - Signup
+app.post('/api/auth/signup', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        if (!username || !password) return res.status(400).send("Username and password required");
+
+        // Simple check if user exists (Scanning is inefficient for prod, but okay for simple app)
+        // Ideally Username should be partition key or unique index
+        const { resources: existingUsers } = await usersContainer.items
+            .query({
+                query: "SELECT * FROM c WHERE c.username = @username",
+                parameters: [{ name: "@username", value: username }]
+            })
+            .fetchAll();
+
+        if (existingUsers.length > 0) return res.status(409).send("User already exists");
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = {
+            id: username + '-' + Date.now(),
+            username,
+            password: hashedPassword,
+            createdAt: new Date()
+        };
+
+        await usersContainer.items.create(newUser);
+        res.status(201).send("User created");
+    } catch (error) {
+        console.error("Signup error:", error);
+        res.status(500).send("Error creating user");
     }
-    const blobServiceClient = BlobServiceClient.fromConnectionString(AZURE_STORAGE_CONNECTION_STRING);
-    const containerClient = blobServiceClient.getContainerClient(AZURE_STORAGE_CONTAINER_NAME);
-    await containerClient.createIfNotExists({ access: 'blob' }); // Set public access to blob level if needed so users can view videos
-    console.log("Blob Storage container initialized");
-}
-initBlobStorage().catch(console.error);
+});
 
+// API: Auth - Login
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
 
-// API: Get SAS Token for Upload
-app.get('/api/sas-token', async (req, res) => {
+        const { resources: users } = await usersContainer.items
+            .query({
+                query: "SELECT * FROM c WHERE c.username = @username",
+                parameters: [{ name: "@username", value: username }]
+            })
+            .fetchAll();
+
+        if (users.length === 0) return res.status(400).send("User not found");
+        const user = users[0];
+
+        if (await bcrypt.compare(password, user.password)) {
+            const accessToken = jwt.sign({ username: user.username, id: user.id }, JWT_SECRET);
+            res.json({ accessToken });
+        } else {
+            res.status(403).send("Invalid credentials");
+        }
+    } catch (error) {
+        console.error("Login error:", error);
+        res.status(500).send("Error logging in");
+    }
+});
+
+// API: Get SAS Token for Upload (Protected)
+app.get('/api/sas-token', authenticateToken, async (req, res) => {
     try {
         const { filename } = req.query;
+        // ... [Rest of SAS endpoint]
         if (!filename) return res.status(400).send("Filename required");
 
         const blobServiceClient = BlobServiceClient.fromConnectionString(AZURE_STORAGE_CONNECTION_STRING);
@@ -97,8 +190,8 @@ app.get('/api/sas-token', async (req, res) => {
     }
 });
 
-// API: Save Metadata
-app.post('/api/video-metadata', async (req, res) => {
+// API: Save Metadata (Protected)
+app.post('/api/video-metadata', authenticateToken, async (req, res) => {
     try {
         const { title, description, filename, blobUrl } = req.body;
 
@@ -110,6 +203,7 @@ app.post('/api/video-metadata', async (req, res) => {
             description,
             filename,
             blobUrl,
+            createdBy: req.user.username, // From JWT
             uploadDate: new Date()
         };
 
@@ -121,6 +215,86 @@ app.post('/api/video-metadata', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+// API: Get All Videos (Feed)
+app.get('/api/videos', async (req, res) => {
+    try {
+        if (!cosmosContainer) return res.status(503).send("Database not initialized");
+
+        // Query all videos, sorted by date desc
+        const { resources: videos } = await cosmosContainer.items
+            .query("SELECT * FROM c ORDER BY c.uploadDate DESC")
+            .fetchAll();
+
+        res.json(videos);
+    } catch (error) {
+        console.error("Feed error:", error);
+        res.status(500).send("Error fetching feed");
+    }
 });
+
+// API: Like Video
+app.post('/api/videos/:id/like', authenticateToken, async (req, res) => {
+    try {
+        const videoId = req.params.id;
+        const userId = req.user.id; // From JWT
+
+        // In a real app, strict relation tables are better. 
+        // Here we can store likes in a separate container or array in video doc.
+        // Let's use a separate container 'Interactions' if we initialized it, 
+        // but to keep it simple with existing containers, we'll update the Video document 
+        // by adding the userId to a 'likes' array. 
+        // Limitation: 2MB doc size limit.
+
+        const { resource: video } = await cosmosContainer.item(videoId, videoId).read();
+        if (!video) return res.status(404).send("Video not found");
+
+        if (!video.likes) video.likes = [];
+
+        const index = video.likes.indexOf(userId);
+        if (index === -1) {
+            video.likes.push(userId); // Like
+        } else {
+            video.likes.splice(index, 1); // Unlike
+        }
+
+        const { resource: updatedVideo } = await cosmosContainer.item(videoId, videoId).replace(video);
+        res.json({ likes: updatedVideo.likes.length, liked: index === -1 });
+
+    } catch (error) {
+        console.error("Like error:", error);
+        res.status(500).send("Error liking video");
+    }
+});
+
+// API: Add Comment
+app.post('/api/videos/:id/comments', authenticateToken, async (req, res) => {
+    try {
+        const videoId = req.params.id;
+        const { text } = req.body;
+        if (!text) return res.status(400).send("Comment text required");
+
+        const { resource: video } = await cosmosContainer.item(videoId, videoId).read();
+        if (!video) return res.status(404).send("Video not found");
+
+        if (!video.comments) video.comments = [];
+
+        const newComment = {
+            id: Date.now().toString(),
+            userId: req.user.id,
+            username: req.user.username,
+            text,
+            date: new Date()
+        };
+
+        video.comments.push(newComment);
+
+        await cosmosContainer.item(videoId, videoId).replace(video);
+        res.status(201).json(newComment);
+
+    } catch (error) {
+        console.error("Comment error:", error);
+        res.status(500).send("Error commenting");
+    }
+});
+
+// Server started in initApp()

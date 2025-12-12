@@ -8,6 +8,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressBar = document.getElementById('progressBar');
     const progressText = document.getElementById('progressText');
 
+    // Auth Check
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // Logout Logic
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        });
+    }
+
     fileInput.addEventListener('change', (e) => {
         if (fileInput.files.length > 0) {
             fileLabelText.textContent = fileInput.files[0].name;
@@ -40,9 +56,17 @@ document.addEventListener('DOMContentLoaded', () => {
             // 1. Get SAS URL from backend
             // Using a timestamp to ensure unique filenames in blob storage
             const uniqueFilename = `${Date.now()}-${file.name}`;
-            const sasResponse = await fetch(`/api/sas-token?filename=${encodeURIComponent(uniqueFilename)}`);
+            const sasResponse = await fetch(`/api/sas-token?filename=${encodeURIComponent(uniqueFilename)}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
 
             if (!sasResponse.ok) {
+                if (sasResponse.status === 401 || sasResponse.status === 403) {
+                    alert("Session expired. Please login again.");
+                    localStorage.removeItem('token');
+                    window.location.href = 'login.html';
+                    return;
+                }
                 throw new Error("Failed to get upload authorization");
             }
 
@@ -75,7 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const metadataResponse = await fetch('/api/video-metadata', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
                         body: JSON.stringify({
                             title,
                             description,

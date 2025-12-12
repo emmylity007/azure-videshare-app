@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideSocial - Feed</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Ionicons for modern icons -->
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</head>
+
+<body class="feed-body">
+    <div class="video-feed-container" id="feedContainer">
+        <!-- Videos will be injected here via JS -->
+    </div>
+
+    <!-- Navigation Bar (Mobile Style) -->
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item">
+            <ion-icon name="cloud-upload-outline"></ion-icon>
+        </a>
+        <a href="feed.html" class="nav-item active">
+            <ion-icon name="home"></ion-icon>
+        </a>
+        <a href="#" id="logoutNav" class="nav-item">
+            <ion-icon name="log-out-outline"></ion-icon>
+        </a>
+    </nav>
+
+    <script src="feed.js"></script>
+</body>
+
+</html>

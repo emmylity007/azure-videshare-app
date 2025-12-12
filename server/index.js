@@ -86,24 +86,24 @@ function authenticateToken(req, res, next) {
 // API: Auth - Signup
 app.post('/api/auth/signup', async (req, res) => {
     try {
-        const { username, password } = req.body;
-        if (!username || !password) return res.status(400).send("Username and password required");
+        const { username, email, password } = req.body;
+        if (!username || !email || !password) return res.status(400).send("Username, Email, and Password required");
 
-        // Simple check if user exists (Scanning is inefficient for prod, but okay for simple app)
-        // Ideally Username should be partition key or unique index
+        // Check if email already exists
         const { resources: existingUsers } = await usersContainer.items
             .query({
-                query: "SELECT * FROM c WHERE c.username = @username",
-                parameters: [{ name: "@username", value: username }]
+                query: "SELECT * FROM c WHERE c.email = @email",
+                parameters: [{ name: "@email", value: email }]
             })
             .fetchAll();
 
-        if (existingUsers.length > 0) return res.status(409).send("User already exists");
+        if (existingUsers.length > 0) return res.status(409).send("User with this email already exists");
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = {
             id: username + '-' + Date.now(),
             username,
+            email,
             password: hashedPassword,
             createdAt: new Date()
         };
@@ -119,12 +119,12 @@ app.post('/api/auth/signup', async (req, res) => {
 // API: Auth - Login
 app.post('/api/auth/login', async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { email, password } = req.body;
 
         const { resources: users } = await usersContainer.items
             .query({
-                query: "SELECT * FROM c WHERE c.username = @username",
-                parameters: [{ name: "@username", value: username }]
+                query: "SELECT * FROM c WHERE c.email = @email",
+                parameters: [{ name: "@email", value: email }]
             })
             .fetchAll();
 

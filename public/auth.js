@@ -6,9 +6,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const username = loginForm.username.value;
+            const email = loginForm.email.value;
             const password = loginForm.password.value;
-            submitAuth('/api/auth/login', { username, password });
+            submitAuth('/api/auth/login', { email, password });
         });
     }
 
@@ -16,8 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const username = signupForm.username.value;
+            const email = signupForm.email.value;
             const password = signupForm.password.value;
-            submitAuth('/api/auth/signup', { username, password }, true);
+            submitAuth('/api/auth/signup', { username, email, password }, true);
         });
     }
 

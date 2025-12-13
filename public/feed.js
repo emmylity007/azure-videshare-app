@@ -141,10 +141,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
 
                 <div class="actions">
-                    <button class="action-btn mute-btn" style="margin-bottom: auto">
-                        <ion-icon name="volume-mute-outline"></ion-icon>
-                        <span>Mute</span>
-                    </button>
                     <button class="action-btn like-btn" data-id="${video.id}">
                         <ion-icon name="${isLiked ? 'heart' : 'heart-outline'}" class="${isLiked ? 'liked' : ''}"></ion-icon>
                         <span class="likes-count">${likesCount}</span>
@@ -183,10 +179,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
         `;
 
-        // Video Play/Pause on click
+        // Video Play/Pause setup
         const videoEl = div.querySelector('video');
         videoEl.muted = isGlobalMuted; // Initialize with global state
         videoEl.volume = 1.0;
+        // Ensure no captions/tracks
+        videoEl.disableRemotePlayback = true;
 
         // -- Comments Logic --
         const commentBtn = div.querySelector('.comment-btn');
@@ -212,65 +210,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Prevent click inside panel from closing or pausing video
         commentsPanel.addEventListener('click', (e) => e.stopPropagation());
 
-        // Mute Toggle
-        const muteBtn = div.querySelector('.mute-btn');
-        const muteIcon = muteBtn.querySelector('ion-icon');
-        const muteText = muteBtn.querySelector('span');
+        // TAP TO MUTE LOGIC (Replaces Play/Pause and Mute Button)
+        const videoFrame = div.querySelector('.video-frame');
 
-        // Helper to update UI
-        const updateMuteUI = (muted) => {
-            if (muted) {
-                muteIcon.name = 'volume-mute-outline';
-                muteText.textContent = "Unmute";
-            } else {
-                muteIcon.name = 'volume-high-outline';
-                muteText.textContent = "Mute";
-            }
-        };
+        videoFrame.addEventListener('click', (e) => {
+            // Ignore if clicking buttons/panels
+            if (e.target.closest('button') || e.target.closest('.comments-panel') || e.target.closest('.options-menu-container')) return;
 
-        // Sync UI initial state
-        updateMuteUI(isGlobalMuted);
-
-        muteBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             e.stopPropagation();
-            isGlobalMuted = !isGlobalMuted; // Toggle global state
 
-            // Update THIS video immediately
-            videoEl.muted = isGlobalMuted;
+            // Toggle Global Mute State
+            isGlobalMuted = !isGlobalMuted;
+
+            // Apply to ALL videos to keep sync
+            document.querySelectorAll('video').forEach(vid => {
+                vid.muted = isGlobalMuted;
+                if (!isGlobalMuted) {
+                    vid.removeAttribute('muted'); // Ensure unmuted works
+                }
+            });
+
+            // Wake up Audio Engine if unmuting
             if (!isGlobalMuted) {
-                videoEl.removeAttribute('muted');
-                videoEl.play().catch(e => console.log("Play failed", e));
-
-                // Helper: Wake up audio engine
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                 if (AudioContext) {
                     const ctx = new AudioContext();
                     ctx.resume().then(() => ctx.close());
                 }
             }
-
-            updateMuteUI(isGlobalMuted);
-
-            // Update ALL OTHER videos and buttons
-            document.querySelectorAll('.video-card').forEach(card => {
-                const vid = card.querySelector('video');
-                const btn = card.querySelector('.mute-btn');
-                const icon = btn.querySelector('ion-icon');
-                const text = btn.querySelector('span');
-
-                if (vid && vid !== videoEl) {
-                    vid.muted = isGlobalMuted;
-                    if (!isGlobalMuted) vid.removeAttribute('muted');
-                }
-
-                if (icon && btn !== muteBtn) {
-                    icon.name = isGlobalMuted ? 'volume-mute-outline' : 'volume-high-outline';
-                }
-                if (text && btn !== muteBtn) {
-                    text.textContent = isGlobalMuted ? "Unmute" : "Mute";
-                }
-            });
         });
+
+
+        // Video Play/Pause on click
+
+
+
 
         // Post Comment
         const postComment = async () => {

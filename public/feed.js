@@ -159,6 +159,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </button>
                     ${optionsButtonHTML}
                 </div>
+
+                <div class="comments-panel">
+                    <div class="panel-header">
+                        <h3>Comments (<span class="comment-count-header">${video.comments ? video.comments.length : 0}</span>)</h3>
+                        <button class="close-comments"><ion-icon name="close-outline"></ion-icon></button>
+                    </div>
+                    <div class="comments-list">
+                         ${video.comments && video.comments.length > 0 ?
+                video.comments.map(c => `
+                                 <div class="comment-item">
+                                     <strong>${c.username || 'User'}</strong>
+                                     <p>${c.text}</p>
+                                 </div>
+                             `).join('') : '<p class="no-comments">No comments yet.</p>'
+            }
+                    </div>
+                    <div class="comment-input-area">
+                        <input type="text" placeholder="Add a comment..." class="comment-input">
+                        <button class="post-comment-btn"><ion-icon name="send"></ion-icon></button>
+                    </div>
+                </div>
             </div>
         `;
 
@@ -166,6 +187,89 @@ document.addEventListener('DOMContentLoaded', async () => {
         const videoEl = div.querySelector('video');
         videoEl.muted = isGlobalMuted; // Initialize with global state
         videoEl.volume = 1.0;
+
+        // -- Comments Logic --
+        const commentBtn = div.querySelector('.comment-btn');
+        const commentsPanel = div.querySelector('.comments-panel');
+        const closeCommentsBtn = div.querySelector('.close-comments');
+        const postCommentBtn = div.querySelector('.post-comment-btn');
+        const commentInput = div.querySelector('.comment-input');
+        const commentsList = div.querySelector('.comments-list');
+        const commentCountSpan = div.querySelector('.comment-btn span');
+        const headerCountSpan = div.querySelector('.comment-count-header');
+
+        const toggleComments = (e) => {
+            if (e) e.stopPropagation();
+            commentsPanel.classList.toggle('open');
+        };
+
+        commentBtn.addEventListener('click', toggleComments);
+        closeCommentsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            commentsPanel.classList.remove('open');
+        });
+
+        // Prevent click inside panel from closing or pausing video
+        commentsPanel.addEventListener('click', (e) => e.stopPropagation());
+
+        // Post Comment
+        const postComment = async () => {
+            if (!token) {
+                alert("Please login to comment");
+                window.location.href = 'login.html';
+                return;
+            }
+            const text = commentInput.value.trim();
+            if (!text) return;
+
+            try {
+                const res = await fetch(`/api/videos/${video.id}/comment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ text })
+                });
+
+                if (res.ok) {
+                    const newComment = await res.json();
+
+                    // Remove 'no comments' msg if exists
+                    const noComments = commentsList.querySelector('.no-comments');
+                    if (noComments) noComments.remove();
+
+                    // Append new comment
+                    const commentDiv = document.createElement('div');
+                    commentDiv.className = 'comment-item';
+                    commentDiv.innerHTML = `<strong>${newComment.username || 'Me'}</strong><p>${newComment.text}</p>`;
+                    commentsList.appendChild(commentDiv);
+
+                    // Scroll to bottom
+                    commentsList.scrollTop = commentsList.scrollHeight;
+
+                    // Update Counts
+                    const currentCount = parseInt(commentCountSpan.innerText) + 1;
+                    commentCountSpan.innerText = currentCount;
+                    headerCountSpan.innerText = currentCount;
+
+                    commentInput.value = '';
+                } else {
+                    alert('Failed to post comment');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        postCommentBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            postComment();
+        });
+
+        commentInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') postComment();
+        });
 
         // Download Action
         // Options Menu Logic (Universal)

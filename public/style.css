@@ -362,6 +362,7 @@ footer {
     font-size: 0.9rem;
     font-weight: 600;
     color: var(--text-color);
+    text-transform: capitalize;
 }
 
 .nav-top {
@@ -476,7 +477,24 @@ footer {
     /* Re-enable clicks */
 }
 
+.video-info h3 {
+    margin-bottom: 0.2rem;
+    font-size: 1.1rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    display: inline-block;
+    cursor: pointer;
+    text-transform: capitalize;
+}
+
+.video-title {
+    font-size: 0.95rem;
+    margin-bottom: 0.2rem;
+    font-weight: 300;
+    text-transform: capitalize;
+}
+
 .video-info {
+
     flex: 1;
     color: white;
     /* margin-right: 1rem; Removed as actions are separate */
@@ -533,23 +551,26 @@ footer {
 }
 
 /* Comments Modal (Simple overlay) */
+/* Comments Panel (Right Side Drawer on Desktop) */
 .comments-panel {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 50vh;
-    background: var(--card-bg);
-    border-radius: 1rem 1rem 0 0;
-    transform: translateY(100%);
-    transition: transform 0.3s;
+    top: 0;
+    right: 0;
+    width: 350px;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    /* Opaque background */
+    backdrop-filter: blur(10px);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 200;
     display: flex;
     flex-direction: column;
 }
 
 .comments-panel.open {
-    transform: translateY(0);
+    transform: translateX(0);
 }
 
 .panel-header {
@@ -634,6 +655,25 @@ footer {
     /* Hide User Profile on Mobile to save space */
     .user-profile {
         display: none;
+    }
+
+    /* Comments Panel - Bottom Sheet on Mobile */
+    .comments-panel {
+        top: auto;
+        bottom: 0;
+        right: 0;
+        /* Reset */
+        left: 0;
+        width: 100%;
+        height: 60vh;
+        border-left: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 1rem 1rem 0 0;
+        transform: translateY(100%);
+    }
+
+    .comments-panel.open {
+        transform: translateY(0);
     }
 
     /* Transform Sidebar to Bottom Nav */

@@ -72,22 +72,34 @@ document.addEventListener('DOMContentLoaded', async () => {
             } catch (e) { }
         }
 
-        const optionsButtonHTML = isOwner ? `
+        let optionsItems = `
+            <button class="option-item download-option">
+                <ion-icon name="download-outline"></ion-icon> Save
+            </button>
+        `;
+
+        if (isOwner) {
+            optionsItems += `
+                <button class="option-item edit-option">
+                    <ion-icon name="create-outline"></ion-icon> Edit
+                </button>
+                <button class="option-item delete-option delete-item">
+                    <ion-icon name="trash-outline"></ion-icon> Delete
+                </button>
+            `;
+        }
+
+        const optionsButtonHTML = `
             <div class="options-menu-container" style="position: relative;">
                 <button class="action-btn options-btn">
                     <ion-icon name="ellipsis-horizontal"></ion-icon>
                     <span>More</span>
                 </button>
                 <div class="options-dropdown">
-                    <button class="option-item edit-option">
-                        <ion-icon name="create-outline"></ion-icon> Edit
-                    </button>
-                    <button class="option-item delete-option delete-item">
-                        <ion-icon name="trash-outline"></ion-icon> Delete
-                    </button>
+                    ${optionsItems}
                 </div>
             </div>
-        ` : '';
+        `;
 
         div.innerHTML = `
             <div class="video-frame">
@@ -120,10 +132,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <ion-icon name="share-social-outline"></ion-icon>
                         <span>Share</span>
                     </button>
-                    <button class="action-btn download-btn">
-                        <ion-icon name="download-outline"></ion-icon>
-                        <span>Save</span>
-                    </button>
                     ${optionsButtonHTML}
                 </div>
             </div>
@@ -135,118 +143,48 @@ document.addEventListener('DOMContentLoaded', async () => {
         videoEl.volume = 1.0;
 
         // Download Action
-        const downloadBtn = div.querySelector('.download-btn');
-        downloadBtn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            try {
-                // Fetch blob to enable download
-                const response = await fetch(video.blobUrl);
-                const blob = await response.blob();
-                const blobUrl = window.URL.createObjectURL(blob);
+        // Options Menu Logic (Universal)
+        const optionsBtn = div.querySelector('.options-btn');
+        const dropdown = div.querySelector('.options-dropdown');
 
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = blobUrl;
-                // Use title or fallback filename
-                a.download = `${video.title || 'video'}.mp4`;
-                document.body.appendChild(a);
-                a.click();
-
-                window.URL.revokeObjectURL(blobUrl);
-                a.remove();
-            } catch (err) {
-                console.error("Download failed", err);
-                alert("Failed to download video.");
-            }
-        });
-
-        // Mute Toggle
-        const muteBtn = div.querySelector('.mute-btn');
-        const muteIcon = muteBtn.querySelector('ion-icon');
-        const muteText = muteBtn.querySelector('span');
-
-        // Helper to update UI
-        const updateMuteUI = (muted) => {
-            if (muted) {
-                muteIcon.name = 'volume-mute-outline';
-                muteText.textContent = "Unmute";
-            } else {
-                muteIcon.name = 'volume-high-outline';
-                muteText.textContent = "Mute";
-            }
-        };
-
-        // Sync UI initial state
-        updateMuteUI(isGlobalMuted);
-
-        muteBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            isGlobalMuted = !isGlobalMuted; // Toggle global state
-
-            // Update THIS video immediately
-            videoEl.muted = isGlobalMuted;
-            if (!isGlobalMuted) {
-                videoEl.removeAttribute('muted');
-                videoEl.play().catch(e => console.log("Play failed", e));
-
-                // Helper: Wake up audio engine
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (AudioContext) {
-                    const ctx = new AudioContext();
-                    ctx.resume().then(() => ctx.close());
-                }
-            }
-
-            updateMuteUI(isGlobalMuted);
-
-            // Update ALL OTHER videos and buttons
-            document.querySelectorAll('.video-card').forEach(card => {
-                const vid = card.querySelector('video');
-                const btn = card.querySelector('.mute-btn');
-                const icon = btn.querySelector('ion-icon');
-                const text = btn.querySelector('span');
-
-                if (vid && vid !== videoEl) {
-                    vid.muted = isGlobalMuted;
-                    if (!isGlobalMuted) vid.removeAttribute('muted');
-                }
-
-                if (icon && btn !== muteBtn) {
-                    icon.name = isGlobalMuted ? 'volume-mute-outline' : 'volume-high-outline';
-                }
-                if (text && btn !== muteBtn) {
-                    text.textContent = isGlobalMuted ? "Unmute" : "Mute";
-                }
-            });
-        });
-
-        // Error Handling
-        videoEl.addEventListener('error', () => {
-            console.warn(`Removing orphaned video: ${video.id}`);
-            div.remove();
-        });
-
-        div.addEventListener('click', (e) => {
-            if (e.target.closest('button')) return;
-
-            const dropdowns = document.querySelectorAll('.options-dropdown.show');
-            dropdowns.forEach(d => d.classList.remove('show'));
-
-            if (videoEl.paused) videoEl.play();
-            else videoEl.pause();
-        });
-
-        // Options Menu Logic
-        if (isOwner) {
-            const optionsBtn = div.querySelector('.options-btn');
-            const dropdown = div.querySelector('.options-dropdown');
-            const editBtn = div.querySelector('.edit-option');
-            const deleteBtn = div.querySelector('.delete-option');
-
+        if (optionsBtn) {
             optionsBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 dropdown.classList.toggle('show');
             });
+        }
+
+        // Download Action (Universal)
+        const downloadBtn = div.querySelector('.download-option');
+        if (downloadBtn) {
+            downloadBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                try {
+                    const response = await fetch(video.blobUrl);
+                    const blob = await response.blob();
+                    const blobUrl = window.URL.createObjectURL(blob);
+
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = blobUrl;
+                    a.download = `${video.title || 'video'}.mp4`;
+                    document.body.appendChild(a);
+                    a.click();
+
+                    window.URL.revokeObjectURL(blobUrl);
+                    a.remove();
+                    dropdown.classList.remove('show');
+                } catch (err) {
+                    console.error("Download failed", err);
+                    alert("Failed to download video.");
+                }
+            });
+        }
+
+        // Owner-only Actions
+        if (isOwner) {
+            const editBtn = div.querySelector('.edit-option');
+            const deleteBtn = div.querySelector('.delete-option');
 
             deleteBtn.addEventListener('click', async (e) => {
                 e.stopPropagation();

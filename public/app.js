@@ -1,5 +1,25 @@
+// Make functions globally available
+window.openUploadModal = function () {
+    document.getElementById('uploadModal').classList.add('show');
+}
+
+window.closeUploadModal = function () {
+    document.getElementById('uploadModal').classList.remove('show');
+}
+
+// Close when clicking outside
+window.onclick = function (event) {
+    const modal = document.getElementById('uploadModal');
+    if (event.target == modal) {
+        modal.classList.remove('show');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const uploadForm = document.getElementById('uploadForm');
+    // If not on a page with upload form, skip
+    if (!uploadForm) return;
+
     const fileInput = document.getElementById('videoFile');
     const fileLabelText = document.getElementById('fileLabelText');
     const uploadBtn = document.getElementById('uploadBtn');
@@ -10,10 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Auth Check
     const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = 'login.html';
-        return;
-    }
+    // Note: We don't redirect here anymore because this script might run on index.html where guest access is allowed.
+    // Validation happens on upload attempt.
 
     // Logout Logic
     const logoutBtn = document.getElementById('logoutBtn');
@@ -35,6 +53,12 @@ document.addEventListener('DOMContentLoaded', () => {
     uploadForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
+        if (!token) {
+            alert("Please login to upload videos.");
+            window.location.href = 'login.html';
+            return;
+        }
+
         const file = fileInput.files[0];
         const title = document.getElementById('title').value;
         const description = document.getElementById('description').value;
@@ -54,7 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             // 1. Get SAS URL from backend
-            // Using a timestamp to ensure unique filenames in blob storage
             const uniqueFilename = `${Date.now()}-${file.name}`;
             const sasResponse = await fetch(`/api/sas-token?filename=${encodeURIComponent(uniqueFilename)}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -73,10 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const { sasUrl, uploadUrl } = await sasResponse.json();
 
             // 2. Upload to Azure Blob Storage using PUT (Block Blob)
-            // Note: For very large files, chunked upload is better, but simple PUT works for < 256MB usually.
-            // Using logic agnostic XHR or fetch for upload to track progress.
-            // But we can also use the Azure SDK for JS browser if included, but a direct PUT is simpler without heavy bundle.
-
             const xhr = new XMLHttpRequest();
             xhr.open("PUT", uploadUrl, true);
             xhr.setRequestHeader('x-ms-blob-type', 'BlockBlob'); // Required for Block Blob
@@ -91,10 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             xhr.onload = async () => {
                 if (xhr.status === 201 || xhr.status === 200) {
-                    // Upload success
-
                     // 3. Save Metadata
-                    // We need the clean Blob URL without SAS token to store
                     const blobUrlWithoutSas = uploadUrl.split('?')[0];
 
                     const metadataResponse = await fetch('/api/video-metadata', {
@@ -112,13 +128,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
 
                     if (metadataResponse.ok) {
-                        statusMessage.textContent = "Upload successful! Redirecting to feed...";
+                        statusMessage.textContent = "Upload successful!";
                         statusMessage.style.color = "#4ade80"; // green
                         uploadForm.reset();
                         fileLabelText.textContent = "Choose Video File";
+                        progressBar.style.width = '100%';
+                        progressText.textContent = '100%';
+
                         setTimeout(() => {
-                            window.location.href = 'index.html';
-                        }, 1500);
+                            window.closeUploadModal();
+                            window.location.reload(); // Refresh feed to show new video
+                        }, 1000);
                     } else {
                         throw new Error("Video uploaded but failed to save metadata.");
                     }

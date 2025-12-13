@@ -58,8 +58,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 isLiked = video.likes.includes(userId);
             } catch (e) { console.error("Invalid token"); }
         }
-        // To be strictly correct, we'd need to fetch "isLiked" state or decode token ID locally.
-        // Let's assume server returns full objects for now.
 
         // Check ownership
         let isOwner = false;
@@ -67,9 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (token) {
             try {
                 const decoded = parseJwt(token);
-                currentUsername = decoded.username; // Assuming username is in JWT
-                // Note: video.createdBy should be username to match req.user.username in backend check
-                // If createdBy is username, this works.
+                currentUsername = decoded.username;
                 if (video.createdBy === currentUsername) {
                     isOwner = true;
                 }
@@ -95,7 +91,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         div.innerHTML = `
             <div class="video-frame">
-                <video class="video-player" src="${video.blobUrl}" loop playsinline muted></video>
+                <video class="video-player" src="${video.blobUrl}" loop playsinline></video>
                 
                 <div class="overlay">
                     <div class="overlay-content">
@@ -132,42 +128,77 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Video Play/Pause on click
         const videoEl = div.querySelector('video');
         videoEl.muted = isGlobalMuted; // Initialize with global state
+        videoEl.volume = 1.0;
 
         // Mute Toggle
         const muteBtn = div.querySelector('.mute-btn');
         const muteIcon = muteBtn.querySelector('ion-icon');
-        const muteText = muteBtn.querySelector('span'); // Get span
+        const muteText = muteBtn.querySelector('span');
+
+        // Helper to update UI
+        const updateMuteUI = (muted) => {
+            if (muted) {
+                muteIcon.name = 'volume-mute-outline';
+                muteText.textContent = "Unmute";
+            } else {
+                muteIcon.name = 'volume-high-outline';
+                muteText.textContent = "Mute";
+            }
+        };
 
         // Sync UI initial state
-        muteIcon.name = isGlobalMuted ? 'volume-mute-outline' : 'volume-high-outline';
-        muteText.textContent = isGlobalMuted ? "Mute" : "Vol";
+        updateMuteUI(isGlobalMuted);
 
         muteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             isGlobalMuted = !isGlobalMuted; // Toggle global state
 
-            // Update ALL videos and buttons
+            // Update THIS video immediately
+            videoEl.muted = isGlobalMuted;
+            if (!isGlobalMuted) {
+                videoEl.removeAttribute('muted');
+                videoEl.play().catch(e => console.log("Play failed", e));
+
+                // Helper: Wake up audio engine
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    const ctx = new AudioContext();
+                    ctx.resume().then(() => ctx.close());
+                }
+            }
+
+            updateMuteUI(isGlobalMuted);
+
+            // Update ALL OTHER videos and buttons
             document.querySelectorAll('.video-card').forEach(card => {
                 const vid = card.querySelector('video');
                 const btn = card.querySelector('.mute-btn');
                 const icon = btn.querySelector('ion-icon');
                 const text = btn.querySelector('span');
 
-                if (vid) vid.muted = isGlobalMuted;
-                if (icon) icon.name = isGlobalMuted ? 'volume-mute-outline' : 'volume-high-outline';
-                if (text) text.textContent = isGlobalMuted ? "Mute" : "Vol";
+                if (vid && vid !== videoEl) {
+                    vid.muted = isGlobalMuted;
+                    if (!isGlobalMuted) vid.removeAttribute('muted');
+                }
+
+                if (icon && btn !== muteBtn) {
+                    icon.name = isGlobalMuted ? 'volume-mute-outline' : 'volume-high-outline';
+                }
+                if (text && btn !== muteBtn) {
+                    text.textContent = isGlobalMuted ? "Unmute" : "Mute";
+                }
             });
         });
 
-        // Error Handling: Remove card if video fails to load (orphaned metadata)
+        // Error Handling
         videoEl.addEventListener('error', () => {
             console.warn(`Removing orphaned video: ${video.id}`);
             div.remove();
         });
 
         div.addEventListener('click', (e) => {
-            if (e.target.closest('button')) return; // Ignore button clicks
-            // Close dropdown if clicked outside
+            if (e.target.closest('button')) return;
+
             const dropdowns = document.querySelectorAll('.options-dropdown.show');
             dropdowns.forEach(d => d.classList.remove('show'));
 
@@ -183,7 +214,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const deleteBtn = div.querySelector('.delete-option');
 
             optionsBtn.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent video toggle
+                e.stopPropagation();
                 dropdown.classList.toggle('show');
             });
 
@@ -196,7 +227,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             headers: { 'Authorization': `Bearer ${token}` }
                         });
                         if (res.ok) {
-                            div.remove(); // Remove from DOM
+                            div.remove();
                         } else {
                             alert("Failed to delete video");
                         }
@@ -220,9 +251,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 body: JSON.stringify({ title: newTitle, description: newDesc })
                             });
                             if (res.ok) {
-                                // Update UI locally
-                                div.querySelector('.video-info p').textContent = newTitle; // Warning: selector might be ambiguous if description is also p
-                                // Make selectors more specific in innerHTML above
                                 div.querySelector('.video-title').textContent = newTitle;
                                 div.querySelector('.video-desc').textContent = newDesc;
                                 dropdown.classList.remove('show');
@@ -286,7 +314,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 navigator.share({
                     title: video.title,
                     text: video.description,
-                    url: window.location.href // Ideally deep link to video
+                    url: window.location.href
                 });
             } else {
                 alert("Link copied to clipboard!");
@@ -302,7 +330,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             entries.forEach(entry => {
                 const video = entry.target.querySelector('video');
                 if (entry.isIntersecting) {
-                    video.play().catch(e => { /* Autoplay prevented - expected if no user interaction yet */ });
+                    video.play().catch(e => { /* Autoplay prevented */ });
                 } else {
                     video.pause();
                     video.currentTime = 0; // Reset

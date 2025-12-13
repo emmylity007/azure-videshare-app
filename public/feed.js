@@ -8,33 +8,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const feedContainer = document.getElementById('feedContainer');
     const logoutNav = document.getElementById('logoutNav');
 
-    // Mobile Menu Logic
-    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-    const sidebar = document.getElementById('sidebar');
-
-    if (mobileMenuBtn && sidebar) {
-        mobileMenuBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            sidebar.classList.toggle('open');
-        });
-
-        // Close sidebar when clicking outside
-        document.addEventListener('click', (e) => {
-            if (sidebar.classList.contains('open') &&
-                !sidebar.contains(e.target) &&
-                !mobileMenuBtn.contains(e.target)) {
-                sidebar.classList.remove('open');
-            }
-        });
-
-        // Close sidebar when clicking a nav item
-        sidebar.querySelectorAll('.nav-item').forEach(link => {
-            link.addEventListener('click', () => {
-                sidebar.classList.remove('open');
-            });
-        });
-    }
-
     // Update Nav based on Auth State
     if (logoutNav) {
         if (token) {
@@ -147,6 +120,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <ion-icon name="share-social-outline"></ion-icon>
                         <span>Share</span>
                     </button>
+                    <button class="action-btn download-btn">
+                        <ion-icon name="download-outline"></ion-icon>
+                        <span>Save</span>
+                    </button>
                     ${optionsButtonHTML}
                 </div>
             </div>
@@ -156,6 +133,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         const videoEl = div.querySelector('video');
         videoEl.muted = isGlobalMuted; // Initialize with global state
         videoEl.volume = 1.0;
+
+        // Download Action
+        const downloadBtn = div.querySelector('.download-btn');
+        downloadBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            try {
+                // Fetch blob to enable download
+                const response = await fetch(video.blobUrl);
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = blobUrl;
+                // Use title or fallback filename
+                a.download = `${video.title || 'video'}.mp4`;
+                document.body.appendChild(a);
+                a.click();
+
+                window.URL.revokeObjectURL(blobUrl);
+                a.remove();
+            } catch (err) {
+                console.error("Download failed", err);
+                alert("Failed to download video.");
+            }
+        });
 
         // Mute Toggle
         const muteBtn = div.querySelector('.mute-btn');

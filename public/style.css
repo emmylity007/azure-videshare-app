@@ -586,72 +586,54 @@ footer {
         padding: 1rem;
     }
 
-    /* Mobile Menu Button - Visible on Mobile */
-    .mobile-menu-btn {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    /* Transform Sidebar to Slide-out Drawer */
+    /* Transform Sidebar to Bottom Nav */
     .sidebar {
-        width: 250px;
-        /* Drawer width */
-        height: 100vh;
-        flex-direction: column;
-        /* Vertical layout */
-        border-right: 1px solid rgba(255, 255, 255, 0.1);
-        border-top: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        bottom: auto;
-        padding: 4rem 0 2rem 0;
-        /* Top padding for breathing room */
-        justify-content: flex-start;
-        gap: 2rem;
-        background: rgba(0, 0, 0, 0.95);
-        z-index: 1002;
-        /* Above button layer */
-        backdrop-filter: blur(10px);
-        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.5);
-
-        /* Animation Logic */
-        transform: translateX(-100%);
-        /* Hidden */
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .sidebar.open {
-        transform: translateX(0);
-        /* Visible */
-    }
-
-    .nav-top,
-    .nav-bottom {
-        flex-direction: column;
         width: 100%;
-        gap: 2rem;
-        align-items: center;
-        margin: 0;
+        height: 60px;
+        flex-direction: row;
+        border-right: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        padding: 0 1rem;
+        justify-content: center;
+        /* Center everything */
+        gap: 3rem;
+        /* Spacing between groups */
+        background: linear-gradient(to top, rgba(0, 0, 0, 1) 20%, rgba(0, 0, 0, 0.6) 100%);
+        z-index: 1000;
+        backdrop-filter: blur(2px);
+        transform: none;
+        /* Reset drawer transform */
+        transition: none;
+        box-shadow: none;
     }
 
+    .nav-top {
+        flex-direction: row;
+        gap: 3rem;
+        width: auto;
+        justify-content: center;
+    }
+
+    .nav-bottom {
+        margin-top: 0;
+    }
+
+    /* Reset combined styles */
     .sidebar .nav-top,
     .sidebar .nav-bottom {
-        flex-direction: column;
-        width: 100%;
+        flex-direction: row;
+        width: auto;
         margin: 0;
-    }
-
-    .sidebar {
-        justify-content: flex-start;
     }
 
     .nav-item {
-        font-size: 1.8rem;
-        width: 50px;
-        height: 50px;
-        text-shadow: none;
+        font-size: 1.5rem;
+        width: 44px;
+        height: 44px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
     }
 
     /* Adjust Feed for Full Screen */

@@ -728,19 +728,23 @@ footer {
     }
 
     /* Video Frame Between Headers */
+    /* Video Frame Between Headers */
     .video-feed-container {
         width: 100%;
-        height: calc(100vh - 60px) !important;
-        /* 100vh - TopHeader(60px), extends to bottom */
+        /* 100vh - TopHeader(60px) - BottomSpace(3px) */
+        height: calc(100vh - 63px) !important;
         margin-top: 60px;
         padding-bottom: 0px;
+        scroll-snap-type: y mandatory;
     }
 
     .video-card {
         height: 100%;
-        /* Fill the container space */
+        /* Strictly fits the container */
         padding-block: 0;
         border-bottom: none;
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
     }
 
     .video-frame {

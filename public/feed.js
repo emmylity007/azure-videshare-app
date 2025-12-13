@@ -212,6 +212,66 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Prevent click inside panel from closing or pausing video
         commentsPanel.addEventListener('click', (e) => e.stopPropagation());
 
+        // Mute Toggle
+        const muteBtn = div.querySelector('.mute-btn');
+        const muteIcon = muteBtn.querySelector('ion-icon');
+        const muteText = muteBtn.querySelector('span');
+
+        // Helper to update UI
+        const updateMuteUI = (muted) => {
+            if (muted) {
+                muteIcon.name = 'volume-mute-outline';
+                muteText.textContent = "Unmute";
+            } else {
+                muteIcon.name = 'volume-high-outline';
+                muteText.textContent = "Mute";
+            }
+        };
+
+        // Sync UI initial state
+        updateMuteUI(isGlobalMuted);
+
+        muteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            isGlobalMuted = !isGlobalMuted; // Toggle global state
+
+            // Update THIS video immediately
+            videoEl.muted = isGlobalMuted;
+            if (!isGlobalMuted) {
+                videoEl.removeAttribute('muted');
+                videoEl.play().catch(e => console.log("Play failed", e));
+
+                // Helper: Wake up audio engine
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    const ctx = new AudioContext();
+                    ctx.resume().then(() => ctx.close());
+                }
+            }
+
+            updateMuteUI(isGlobalMuted);
+
+            // Update ALL OTHER videos and buttons
+            document.querySelectorAll('.video-card').forEach(card => {
+                const vid = card.querySelector('video');
+                const btn = card.querySelector('.mute-btn');
+                const icon = btn.querySelector('ion-icon');
+                const text = btn.querySelector('span');
+
+                if (vid && vid !== videoEl) {
+                    vid.muted = isGlobalMuted;
+                    if (!isGlobalMuted) vid.removeAttribute('muted');
+                }
+
+                if (icon && btn !== muteBtn) {
+                    icon.name = isGlobalMuted ? 'volume-mute-outline' : 'volume-high-outline';
+                }
+                if (text && btn !== muteBtn) {
+                    text.textContent = isGlobalMuted ? "Unmute" : "Mute";
+                }
+            });
+        });
+
         // Post Comment
         const postComment = async () => {
             if (!token) {

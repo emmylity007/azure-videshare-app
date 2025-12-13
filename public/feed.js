@@ -17,29 +17,60 @@ document.addEventListener('DOMContentLoaded', async () => {
             const initial = username.charAt(0).toUpperCase();
 
             userProfile.innerHTML = `
-                <div class="profile-avatar">${initial}</div>
-                <div class="profile-text">
+                <div class="profile-avatar" style="cursor: pointer;">${initial}</div>
+                <div class="profile-text" style="cursor: pointer;">
                     <span class="welcome-label">Welcome back,</span>
                     <span class="username-label">@${username}</span>
                 </div>
+                
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown">
+                    <div class="dropdown-item">
+                        <ion-icon name="person-outline"></ion-icon> Profile
+                    </div>
+                    <div class="dropdown-item">
+                        <ion-icon name="settings-outline"></ion-icon> Settings
+                    </div>
+                    <div class="dropdown-item logout-item" id="logoutBtn">
+                        <ion-icon name="log-out-outline"></ion-icon> Sign Out
+                    </div>
+                </div>
             `;
+
+            // Toggle Dropdown
+            userProfile.addEventListener('click', (e) => {
+                e.preventDefault();
+                userProfile.classList.toggle('active');
+            });
+
+            // Logout Logic
+            setTimeout(() => {
+                const logoutBtn = document.getElementById('logoutBtn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        localStorage.removeItem('token');
+                        window.location.href = 'index.html';
+                    });
+                }
+            }, 0);
+
         } catch (e) {
             console.error("Profile load error", e);
         }
     }
 
-    // Update Nav based on Auth State
+    // Update Nav based on Auth State (Simplified - Logout removed from nav)
     if (logoutNav) {
-        if (token) {
-            logoutNav.addEventListener('click', (e) => {
-                e.preventDefault();
-                localStorage.removeItem('token');
-                window.location.href = 'index.html'; // Redirect to feed
-            });
-        } else {
-            // Change Logout icon to Login for guests
+        if (!token) {
+            // Only handle login link for guests
             logoutNav.innerHTML = '<ion-icon name="log-in-outline"></ion-icon>';
             logoutNav.href = 'login.html';
+        } else {
+            // If logged in, remove the logout button from NAV entirely
+            logoutNav.parentElement.remove(); // Removes the .nav-bottom container containing it? 
+            // Or just hide it. Let's hide it to be safe.
+            logoutNav.style.display = 'none';
         }
     }
 

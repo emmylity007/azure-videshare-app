@@ -439,6 +439,74 @@ footer {
     /* Highlight active */
 }
 
+/* Profile Dropdown Logic (Desktop) */
+.user-profile {
+    position: fixed;
+    /* Keep existing */
+    /* ... existing props ... */
+    cursor: pointer;
+}
+
+.profile-dropdown {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 0.5rem;
+    width: 160px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    z-index: 1001;
+}
+
+.user-profile.active .profile-dropdown {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.dropdown-item {
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.logout-item {
+    color: #ef4444;
+    /* Red for sign out */
+}
+
+.logout-item:hover {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+/* Mobile Dropdown Position */
+@media (max-width: 768px) {
+    .profile-dropdown {
+        top: 65px;
+        right: 1rem;
+    }
+}
+
 .video-feed-container {
     height: 100vh;
     flex: 1;
@@ -483,7 +551,9 @@ footer {
 .video-player {
     height: 100%;
     width: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    /* Show full video without cropping */
+    background-color: black;
 }
 
 /* Overlay UI */

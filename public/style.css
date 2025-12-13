@@ -597,17 +597,22 @@ footer {
         bottom: 0;
         left: 0;
         padding: 0 1rem;
-        justify-content: space-around;
-        background-color: rgba(0, 0, 0, 0.95);
-        /* Slightly more opaque */
+        justify-content: center;
+        /* Center everything */
+        gap: 3rem;
+        /* Spacing between groups */
+        background: linear-gradient(to top, rgba(0, 0, 0, 1) 20%, rgba(0, 0, 0, 0.6) 100%);
+        /* Gradient backdrop */
+        z-index: 1000;
+        backdrop-filter: blur(2px);
     }
 
     .nav-top {
         flex-direction: row;
-        gap: 0;
-        width: 100%;
-        justify-content: space-between;
-        /* Spread items */
+        gap: 3rem;
+        /* Spacing between Home and Upload */
+        width: auto;
+        justify-content: center;
     }
 
     /* Move logout to be inline with others if needed, 
@@ -622,20 +627,20 @@ footer {
     .sidebar .nav-bottom {
         flex-direction: row;
         width: auto;
-        gap: 0;
         margin: 0;
     }
 
     /* We need to spread nav items evenly across the bottom */
     .sidebar {
-        justify-content: space-evenly;
-        /* Or space-around */
+        justify-content: center;
     }
 
     .nav-item {
         font-size: 1.5rem;
         width: 44px;
         height: 44px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+        /* Shadow for visibility */
     }
 
     /* Adjust Feed for Bottom Nav */
@@ -643,19 +648,15 @@ footer {
         width: 100%;
         height: 100vh;
         /* Takes full viewport */
-        padding-bottom: 60px;
-        /* Space for bottom nav */
+        padding-bottom: 0px;
+        /* Full screen video (behind nav) */
     }
 
     .video-card {
         height: 100vh;
         /* Full viewport height */
         padding-block: 0;
-        /* Remove vertical spacing on mobile for immersive feel? Or keep it? */
-        /* Let's keep small padding for aesthetic or remove to maximize video size */
-        padding-block: 0;
-        border-bottom: 1px solid #111;
-        /* subtle separator if 0 padding */
+        border-bottom: none;
     }
 
     .video-frame {

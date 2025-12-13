@@ -586,62 +586,79 @@ footer {
         padding: 1rem;
     }
 
-    /* Transform Sidebar to Bottom Nav */
+    /* Mobile Menu Button - Visible on Mobile */
+    .mobile-menu-btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Transform Sidebar to Slide-out Drawer */
     .sidebar {
-        width: 100%;
-        height: 60px;
-        flex-direction: row;
-        border-right: none;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        position: absolute;
-        /* Changed from fixed */
-        bottom: 0;
+        width: 250px;
+        /* Drawer width */
+        height: 100vh;
+        flex-direction: column;
+        /* Vertical layout */
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: none;
+        position: fixed;
+        top: 0;
         left: 0;
-        padding: 0 1rem;
-        justify-content: center;
-        /* Center everything */
-        gap: 3rem;
-        /* Spacing between groups */
-        background: linear-gradient(to top, rgba(0, 0, 0, 1) 20%, rgba(0, 0, 0, 0.6) 100%);
-        /* Gradient backdrop */
-        z-index: 1000;
-        backdrop-filter: blur(2px);
+        bottom: auto;
+        padding: 4rem 0 2rem 0;
+        /* Top padding for breathing room */
+        justify-content: flex-start;
+        gap: 2rem;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 1002;
+        /* Above button layer */
+        backdrop-filter: blur(10px);
+        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.5);
+
+        /* Animation Logic */
+        transform: translateX(-100%);
+        /* Hidden */
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .nav-top {
-        flex-direction: row;
-        gap: 3rem;
-        /* Spacing between Home and Upload */
-        width: auto;
-        justify-content: center;
+    .sidebar.open {
+        transform: translateX(0);
+        /* Visible */
     }
 
-    /* Move logout to be inline with others if needed, 
-       or just keep it in nav-bottom but style it to fit the row */
+    .nav-top,
     .nav-bottom {
-        margin-top: 0;
-        /* margin-left: auto; Optional if we want it right-aligned */
-    }
-
-    /* Actually, better structure for bottom nav: merge them visually */
-    .sidebar .nav-top,
-    .sidebar .nav-bottom {
-        flex-direction: row;
-        width: auto;
+        flex-direction: column;
+        width: 100%;
+        gap: 2rem;
+        align-items: center;
         margin: 0;
     }
 
-    /* We need to spread nav items evenly across the bottom */
+    .sidebar .nav-top,
+    .sidebar .nav-bottom {
+        flex-direction: column;
+        width: 100%;
+        margin: 0;
+    }
+
     .sidebar {
-        justify-content: center;
+        justify-content: flex-start;
     }
 
     .nav-item {
-        font-size: 1.5rem;
-        width: 44px;
-        height: 44px;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-        /* Shadow for visibility */
+        font-size: 1.8rem;
+        width: 50px;
+        height: 50px;
+        text-shadow: none;
+    }
+
+    /* Adjust Feed for Full Screen */
+    .video-feed-container {
+        width: 100%;
+        height: 100vh;
+        padding-bottom: 0px;
     }
 
     /* Adjust Feed for Bottom Nav */

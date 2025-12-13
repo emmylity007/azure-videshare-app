@@ -13,6 +13,21 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    /* Removes blue tap box on mobile */
+}
+
+button {
+    outline: none !important;
+    border: none !important;
+}
+
+button:focus,
+button:active,
+button:hover {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 body {
@@ -535,7 +550,9 @@ footer {
 
 .action-btn {
     background: none;
-    border: none;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
     color: white;
     font-size: 1.5rem;
     /* Reduced from 2rem */
@@ -549,6 +566,13 @@ footer {
 
 .action-btn:active {
     transform: scale(0.9);
+}
+
+.action-btn:hover,
+.action-btn:focus,
+.action-btn:active {
+    background: none !important;
+    background-color: transparent !important;
 }
 
 .action-btn span {
@@ -706,8 +730,8 @@ footer {
     /* Video Frame Between Headers */
     .video-feed-container {
         width: 100%;
-        height: calc(100vh - 120px) !important;
-        /* Force override for spacing */
+        height: calc(100vh - 60px) !important;
+        /* 100vh - TopHeader(60px), extends to bottom */
         margin-top: 60px;
         padding-bottom: 0px;
     }
@@ -746,7 +770,7 @@ footer {
         transform: translateY(0);
     }
 
-    /* Transform Sidebar to Bottom Nav */
+    /* Transform Sidebar to Bottom Nav (Auto-Hide) */
     .sidebar {
         width: 100%;
         height: 60px;
@@ -758,16 +782,21 @@ footer {
         left: 0;
         padding: 0 1rem;
         justify-content: center;
-        /* Center everything */
         gap: 3rem;
-        /* Spacing between groups */
         background: linear-gradient(to top, rgba(0, 0, 0, 1) 20%, rgba(0, 0, 0, 0.6) 100%);
         z-index: 1000;
         backdrop-filter: blur(2px);
-        transform: none;
-        /* Reset drawer transform */
-        transition: none;
         box-shadow: none;
+
+        /* Animation Logic */
+        transform: translateY(100%);
+        /* Default Hidden */
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .sidebar.visible-nav {
+        transform: translateY(0);
+        /* Show when interacted */
     }
 
     .nav-top {

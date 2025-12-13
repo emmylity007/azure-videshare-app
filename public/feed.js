@@ -507,4 +507,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         }).join(''));
         return JSON.parse(jsonPayload);
     }
+
+    // -- Mobile Nav Auto-Hide Logic --
+    (function setupMobileNav() {
+        const sidebar = document.getElementById('sidebar');
+        let navTimer;
+
+        const showNav = () => {
+            // Only run active logic if on mobile to avoid performance hit, 
+            // though CSS handles the display anyway.
+            if (window.innerWidth > 768) return;
+
+            sidebar.classList.add('visible-nav');
+            clearTimeout(navTimer);
+            navTimer = setTimeout(() => {
+                sidebar.classList.remove('visible-nav');
+            }, 2000);
+        };
+
+        // Inputs to trigger nav
+        document.addEventListener('touchstart', showNav, { passive: true });
+        document.addEventListener('click', showNav);
+        document.addEventListener('scroll', showNav, { passive: true });
+        document.addEventListener('mousemove', () => {
+            // Optional: if user uses mouse emulation on mobile
+            if (window.innerWidth <= 768) showNav();
+        });
+
+        // Initialize invisible (CSS does this), wait for input.
+    })();
 });

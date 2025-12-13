@@ -319,6 +319,51 @@ footer {
     /* Prevent shrinking */
 }
 
+/* User Profile in Sidebar */
+.user-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
+.profile-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--secondary-color, #c084fc), var(--primary-color));
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.profile-text {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.welcome-label {
+    font-size: 0.7rem;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.username-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
 .nav-top {
     display: flex;
     flex-direction: column;
@@ -584,6 +629,11 @@ footer {
 @media (max-width: 768px) {
     .container {
         padding: 1rem;
+    }
+
+    /* Hide User Profile on Mobile to save space */
+    .user-profile {
+        display: none;
     }
 
     /* Transform Sidebar to Bottom Nav */

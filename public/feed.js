@@ -7,6 +7,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const feedContainer = document.getElementById('feedContainer');
     const logoutNav = document.getElementById('logoutNav');
+    const userProfile = document.getElementById('userProfile');
+
+    // Display User Profile if logged in
+    if (token && userProfile) {
+        try {
+            const decoded = parseJwt(token);
+            const username = decoded.username || 'User';
+            const initial = username.charAt(0).toUpperCase();
+
+            userProfile.innerHTML = `
+                <div class="profile-avatar">${initial}</div>
+                <div class="profile-text">
+                    <span class="welcome-label">Welcome back,</span>
+                    <span class="username-label">@${username}</span>
+                </div>
+            `;
+        } catch (e) {
+            console.error("Profile load error", e);
+        }
+    }
 
     // Update Nav based on Auth State
     if (logoutNav) {
@@ -14,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             logoutNav.addEventListener('click', (e) => {
                 e.preventDefault();
                 localStorage.removeItem('token');
-                window.location.href = 'login.html';
+                window.location.href = 'index.html'; // Redirect to feed
             });
         } else {
             // Change Logout icon to Login for guests
@@ -72,11 +92,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             } catch (e) { }
         }
 
-        let optionsItems = `
-            <button class="option-item download-option">
-                <ion-icon name="download-outline"></ion-icon> Save
-            </button>
-        `;
+        let optionsItems = '';
+
+        // Added: Only logged in users can Save
+        if (token) {
+            optionsItems += `
+                <button class="option-item download-option">
+                    <ion-icon name="download-outline"></ion-icon> Save
+                </button>
+            `;
+        }
 
         if (isOwner) {
             optionsItems += `
@@ -89,7 +114,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
         }
 
-        const optionsButtonHTML = `
+        const optionsButtonHTML = optionsItems ? `
             <div class="options-menu-container" style="position: relative;">
                 <button class="action-btn options-btn">
                     <ion-icon name="ellipsis-horizontal"></ion-icon>
@@ -99,7 +124,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ${optionsItems}
                 </div>
             </div>
-        `;
+        ` : '';
 
         div.innerHTML = `
             <div class="video-frame">

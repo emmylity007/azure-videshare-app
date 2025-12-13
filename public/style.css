@@ -593,7 +593,8 @@ footer {
         flex-direction: row;
         border-right: none;
         border-top: 1px solid rgba(255, 255, 255, 0.1);
-        position: fixed;
+        position: absolute;
+        /* Changed from fixed */
         bottom: 0;
         left: 0;
         padding: 0 1rem;

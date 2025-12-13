@@ -652,9 +652,50 @@ footer {
         padding: 1rem;
     }
 
-    /* Hide User Profile on Mobile to save space */
+    /* Show User Profile on Mobile as Top Header */
     .user-profile {
+        display: flex;
+        flex-direction: row;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 60px;
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent);
+        border-bottom: none;
+        z-index: 999;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 0 1rem;
+        gap: 1rem;
+        margin: 0;
+    }
+
+    .profile-avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+        margin-bottom: 0;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    }
+
+    .profile-text {
+        text-align: left;
+        align-items: flex-start;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    }
+
+    .welcome-label {
         display: none;
+        /* Hide 'Welcome back' to save space if needed, or keep small */
+        /* Let's keep it small */
+        display: block;
+        font-size: 0.6rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .username-label {
+        font-size: 1rem;
     }
 
     /* Comments Panel - Bottom Sheet on Mobile */

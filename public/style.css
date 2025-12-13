@@ -195,6 +195,66 @@ button:active {
     border-color: var(--primary-color);
 }
 
+/* Options Menu (In Sidebar) */
+/* Container handles toggle state - no specific styles needed yet */
+
+/* Revert top/right fixed pos from previous step if any */
+
+.options-dropdown {
+    display: none;
+    position: absolute;
+    right: 50px;
+    /* Show to the left of the button */
+    bottom: 0;
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 0.5rem;
+    min-width: 140px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+    z-index: 200;
+}
+
+.options-dropdown.show {
+    display: block;
+    animation: fadeIn 0.1s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.option-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.8rem;
+    border: none;
+    background: none;
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 0.95rem;
+    text-align: left;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.option-item:hover {
+    background: var(--hover-color);
+}
+
+.option-item.delete-item {
+    color: #ef4444;
+}
+
 footer {
     text-align: center;
     color: var(--text-muted);
@@ -251,6 +311,7 @@ footer {
     position: relative;
 }
 
+
 .video-card {
     height: 100vh;
     width: 100%;
@@ -260,17 +321,32 @@ footer {
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow: hidden;
+    /* Hide overflow if aspect ratio mismatch */
+}
+
+/* 9:16 Video Frame */
+.video-frame {
+    height: 100%;
+    aspect-ratio: 9 / 16;
+    max-width: 100vw;
+    position: relative;
+    background-color: #000;
+    border-radius: 16px;
+    /* Curious corners */
+    overflow: hidden;
+    /* Clip video to corners */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    /* Optional: adds nice depth */
 }
 
 .video-player {
     height: 100%;
     width: 100%;
     object-fit: cover;
-    /* Fill screen like TikTok */
-    max-width: 600px;
-    /* Limit width on desktop */
 }
 
+/* Overlay UI */
 /* Overlay UI */
 .overlay {
     position: absolute;
@@ -279,7 +355,7 @@ footer {
     left: 0;
     width: 100%;
     padding: 1rem;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    /* Background removed as requested */
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -287,9 +363,13 @@ footer {
     /* Let clicks pass to video */
 }
 
+/* mute-btn logic previously here - removed to use standard action button */
+
+
 .overlay-content {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
+    /* Just align text to left */
     align-items: flex-end;
     width: 100%;
     max-width: 600px;
@@ -301,32 +381,35 @@ footer {
 .video-info {
     flex: 1;
     color: white;
-    margin-right: 1rem;
+    /* margin-right: 1rem; Removed as actions are separate */
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    padding-right: 3rem;
+    /* Prevent text overlapping buttons */
 }
 
-.video-info h3 {
-    margin-bottom: 0.5rem;
-    font-size: 1.1rem;
-}
-
-.video-info p {
-    font-size: 0.9rem;
-    opacity: 0.9;
-}
-
+/* Sidebar for Actions (Mute + Interactions) */
 .actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    justify-content: flex-end;
     align-items: center;
+    padding: 1rem 1rem 80px 1rem;
+    /* Top padding 1rem, Bottom padding for Nav */
+    z-index: 10;
+    gap: 0.8rem;
+    /* Reduced from 1rem */
 }
 
 .action-btn {
     background: none;
     border: none;
     color: white;
-    font-size: 2rem;
+    font-size: 1.5rem;
+    /* Reduced from 2rem */
     cursor: pointer;
     display: flex;
     flex-direction: column;
@@ -340,7 +423,8 @@ footer {
 }
 
 .action-btn span {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
+    /* Reduced from 0.8rem */
     margin-top: 0.3rem;
     font-weight: 600;
 }

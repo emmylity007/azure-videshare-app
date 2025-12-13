@@ -112,10 +112,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
 
                     if (metadataResponse.ok) {
-                        statusMessage.textContent = "Upload successful!";
+                        statusMessage.textContent = "Upload successful! Redirecting to feed...";
                         statusMessage.style.color = "#4ade80"; // green
                         uploadForm.reset();
                         fileLabelText.textContent = "Choose Video File";
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 1500);
                     } else {
                         throw new Error("Video uploaded but failed to save metadata.");
                     }

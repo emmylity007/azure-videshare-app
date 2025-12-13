@@ -225,7 +225,42 @@ app.get('/api/videos', async (req, res) => {
             .query("SELECT * FROM c ORDER BY c.uploadDate DESC")
             .fetchAll();
 
-        res.json(videos);
+        // Generate Read SAS tokens for each video to ensure they are playable (even if private)
+        // Parse connection string once
+        const matches = AZURE_STORAGE_CONNECTION_STRING.match(/AccountName=([^;]+);AccountKey=([^;]+)/);
+        if (!matches) throw new Error("Invalid Connection String");
+        const accountName = matches[1];
+        const accountKey = matches[2];
+        const sharedKeyCredential = new StorageSharedKeyCredential(accountName, accountKey);
+
+        const blobServiceClient = BlobServiceClient.fromConnectionString(AZURE_STORAGE_CONNECTION_STRING);
+        const containerClient = blobServiceClient.getContainerClient(AZURE_STORAGE_CONTAINER_NAME);
+
+        const videosWithSas = await Promise.all(videos.map(async (video) => {
+            try {
+                // Check if blobUrl is from our container (simple check)
+                if (video.blobUrl && video.blobUrl.includes(accountName) && video.filename) {
+                    const sasOptions = {
+                        containerName: AZURE_STORAGE_CONTAINER_NAME,
+                        blobName: video.filename,
+                        permissions: BlobSASPermissions.parse("r"), // Read permission
+                        expiresOn: new Date(new Date().valueOf() + 3600 * 1000) // 1 hour
+                    };
+
+                    const sasTokenParams = generateBlobSASQueryParameters(sasOptions, sharedKeyCredential);
+                    // Append SAS token to blobUrl
+                    const videoWithSas = { ...video };
+                    videoWithSas.blobUrl = `${video.blobUrl}?${sasTokenParams.toString()}`;
+                    return videoWithSas;
+                }
+                return video;
+            } catch (e) {
+                console.error("SAS gen error for video " + video.id, e);
+                return video; // Return original if fails
+            }
+        }));
+
+        res.json(videosWithSas);
     } catch (error) {
         console.error("Feed error:", error);
         res.status(500).send("Error fetching feed");
@@ -294,6 +329,46 @@ app.post('/api/videos/:id/comments', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error("Comment error:", error);
         res.status(500).send("Error commenting");
+    }
+});
+
+// API: Delete Video
+app.delete('/api/videos/:id', authenticateToken, async (req, res) => {
+    try {
+        const videoId = req.params.id;
+        // Verify ownership
+        const { resource: video } = await cosmosContainer.item(videoId, videoId).read();
+
+        if (!video) return res.status(404).send("Video not found");
+        if (video.createdBy !== req.user.username) return res.status(403).send("Unauthorized");
+
+        await cosmosContainer.item(videoId, videoId).delete();
+        res.status(204).send();
+    } catch (error) {
+        console.error("Delete error:", error);
+        res.status(500).send("Error deleting video");
+    }
+});
+
+// API: Edit Video
+app.put('/api/videos/:id', authenticateToken, async (req, res) => {
+    try {
+        const videoId = req.params.id;
+        const { title, description } = req.body;
+
+        const { resource: video } = await cosmosContainer.item(videoId, videoId).read();
+
+        if (!video) return res.status(404).send("Video not found");
+        if (video.createdBy !== req.user.username) return res.status(403).send("Unauthorized");
+
+        video.title = title || video.title;
+        video.description = description || video.description;
+
+        const { resource: updatedVideo } = await cosmosContainer.item(videoId, videoId).replace(video);
+        res.json(updatedVideo);
+    } catch (error) {
+        console.error("Edit error:", error);
+        res.status(500).send("Error updating video");
     }
 });
 

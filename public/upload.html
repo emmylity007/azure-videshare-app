@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideSocial - Video Upload</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts for premium look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h1>VideSocial</h1>
+                <button id="logoutBtn">Logout</button>
+            </div>
+            <p>Upload a new video</p>
+        </header>
+
+        <main>
+            <section class="upload-card">
+                <h2>Upload Video</h2>
+                <form id="uploadForm">
+                    <div class="form-group">
+                        <label for="title">Video Title</label>
+                        <input type="text" id="title" name="title" required placeholder="Enter a catchy title...">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" rows="3"
+                            placeholder="What's this video about?"></textarea>
+                    </div>
+
+                    <div class="form-group file-input-group">
+                        <label for="videoFile" class="file-label">
+                            <span id="fileLabelText">Choose Video File</span>
+                            <input type="file" id="videoFile" name="videoFile" accept="video/*" required>
+                        </label>
+                    </div>
+
+                    <div class="progress-container" id="progressContainer" style="display: none;">
+                        <div class="progress-bar" id="progressBar"></div>
+                        <span id="progressText">0%</span>
+                    </div>
+
+                    <button type="submit" id="uploadBtn">Upload Video</button>
+                    <div id="statusMessage"></div>
+                </form>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 VideSocial</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@azure/storage-blob@12.0.0/browser/azure-storage-blob.min.js"></script>
+    <!-- Ionicons -->
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script src="app.js"></script>
+
+    <!-- Bottom Nav for Consistency (Optional if we want it on upload page too) -->
+    <nav class="bottom-nav">
+        <a href="upload.html" class="nav-item active">
+            <ion-icon name="cloud-upload"></ion-icon>
+        </a>
+        <a href="index.html" class="nav-item">
+            <ion-icon name="home-outline"></ion-icon>
+        </a>
+        <a href="#" id="logoutBtn" class="nav-item">
+            <ion-icon name="log-out-outline"></ion-icon>
+        </a>
+    </nav>
+</body>
+
+</html>

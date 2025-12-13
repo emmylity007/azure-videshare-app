@@ -744,8 +744,8 @@ footer {
     /* Video Frame Between Headers */
     .video-feed-container {
         width: 100%;
-        /* 100vh - TopHeader(60px) - BottomSpace(3px) */
-        height: calc(100vh - 63px) !important;
+        /* 100vh - Top(60) - Nav(60) - Gap(3) */
+        height: calc(100vh - 123px) !important;
         margin-top: 60px;
         padding-bottom: 0px;
         scroll-snap-type: y mandatory;

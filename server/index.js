@@ -204,7 +204,8 @@ app.post('/api/video-metadata', authenticateToken, async (req, res) => {
             filename,
             blobUrl,
             createdBy: req.user.username, // From JWT
-            uploadDate: new Date()
+            uploadDate: new Date(),
+            views: 0
         };
 
         const { resource: createdItem } = await cosmosContainer.items.create(newItem);
@@ -298,6 +299,24 @@ app.post('/api/videos/:id/like', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error("Like error:", error);
         res.status(500).send("Error liking video");
+    }
+});
+
+// API: Increment View Count
+app.post('/api/videos/:id/view', async (req, res) => {
+    try {
+        const videoId = req.params.id;
+        const { resource: video } = await cosmosContainer.item(videoId, videoId).read();
+        if (!video) return res.status(404).send("Video not found");
+
+        if (!video.views) video.views = 0;
+        video.views++;
+
+        const { resource: updatedVideo } = await cosmosContainer.item(videoId, videoId).replace(video);
+        res.json({ views: updatedVideo.views });
+    } catch (error) {
+        console.error("View increment error:", error);
+        res.status(500).send("Error incrementing view");
     }
 });
 

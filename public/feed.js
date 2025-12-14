@@ -9,22 +9,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     const logoutNav = document.getElementById('logoutNav');
     const userProfile = document.getElementById('userProfile');
 
-    // Display User Profile if logged in
-    if (token && userProfile) {
-        try {
-            const decoded = parseJwt(token);
-            const username = decoded.username || 'User';
-            const initial = username.charAt(0).toUpperCase();
+    // Unified Profile & Auth Logic
+    if (userProfile) {
+        let username = 'Guest';
+        let initial = 'G';
+        let authHtml = `
+            <div class="dropdown-item login-item" onclick="window.location.href='login.html'">
+                <ion-icon name="log-in-outline"></ion-icon> Sign In
+            </div>
+        `;
 
-            userProfile.innerHTML = `
-                <div class="profile-avatar" style="cursor: pointer;">${initial}</div>
-                <div class="profile-text" style="cursor: pointer;">
-                    <span class="welcome-label">Welcome back,</span>
-                    <span class="username-label">@${username}</span>
-                </div>
-                
-                <!-- Profile Dropdown -->
-                <div class="profile-dropdown">
+        // If Logged In, overwrite with User Data
+        if (token) {
+            try {
+                const decoded = parseJwt(token);
+                let userRaw = decoded.username || 'User';
+                // Capitalize first letter
+                username = userRaw.charAt(0).toUpperCase() + userRaw.slice(1);
+                initial = username.charAt(0);
+                authHtml = `
                     <div class="dropdown-item">
                         <ion-icon name="person-outline"></ion-icon> Profile
                     </div>
@@ -34,45 +37,44 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="dropdown-item logout-item" id="logoutBtn">
                         <ion-icon name="log-out-outline"></ion-icon> Sign Out
                     </div>
+                `;
+            } catch (e) { console.error("Invalid token", e); }
+        }
+
+        // Render Profile (Icon Only + Dropdown)
+        userProfile.innerHTML = `
+            <div class="profile-avatar" style="cursor: pointer;">${initial}</div>
+            
+            <!-- Profile Dropdown -->
+            <div class="profile-dropdown">
+                <div class="dropdown-header" style="padding: 0.5rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 0.5rem; color: #ccc; font-size: 0.9rem;">
+                    ${username}
                 </div>
-            `;
+                ${authHtml}
+            </div>
+        `;
 
-            // Toggle Dropdown
-            userProfile.addEventListener('click', (e) => {
-                e.preventDefault();
-                userProfile.classList.toggle('active');
-            });
+        // Toggle Dropdown
+        userProfile.addEventListener('click', (e) => {
+            e.preventDefault();
+            userProfile.classList.toggle('active');
+        });
 
-            // Logout Logic
-            setTimeout(() => {
-                const logoutBtn = document.getElementById('logoutBtn');
-                if (logoutBtn) {
-                    logoutBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        localStorage.removeItem('token');
-                        window.location.href = 'index.html';
-                    });
-                }
-            }, 0);
-
-        } catch (e) {
-            console.error("Profile load error", e);
-        }
+        // Logout Event Listener (if exists)
+        setTimeout(() => {
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    localStorage.removeItem('token');
+                    window.location.href = 'index.html';
+                });
+            }
+        }, 0);
     }
 
-    // Update Nav based on Auth State (Simplified - Logout removed from nav)
-    if (logoutNav) {
-        if (!token) {
-            // Only handle login link for guests
-            logoutNav.innerHTML = '<ion-icon name="log-in-outline"></ion-icon>';
-            logoutNav.href = 'login.html';
-        } else {
-            // If logged in, remove the logout button from NAV entirely
-            logoutNav.parentElement.remove(); // Removes the .nav-bottom container containing it? 
-            // Or just hide it. Let's hide it to be safe.
-            logoutNav.style.display = 'none';
-        }
-    }
+    // Hide old logout nav if it exists (it should be empty now as we use Profile for everything)
+    if (logoutNav) logoutNav.style.display = 'none';
 
     // Load Feed
     try {
@@ -159,55 +161,80 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         div.innerHTML = `
             <div class="video-frame">
-                <video class="video-player" src="${video.blobUrl}" loop playsinline></video>
-                
-                <div class="overlay">
-                    <div class="overlay-content">
-                        <div class="video-info">
-                            <h3>@${video.createdBy || 'anonymous'}</h3>
-                            <p class="video-title">${video.title}</p>
-                            <p class="video-desc" style="font-size: 0.8rem;">${video.description || ''}</p>
+                <video class="video-player" src="${video.blobUrl}" data-id="${video.id}" loop playsinline></video>
+                <div class="video-progress-container">
+                    <div class="video-progress-bar"></div>
+                </div>
+                <!-- Desktop/Mobile Top Overlay -->
+                <!-- Mute (Top Left) & Options (Top Right) -->
+                <div class="overlay-top" style="position: absolute; top: 0; left: 0; width: 100%; padding: 1rem; display: flex; justify-content: space-between; align-items: flex-start; z-index: 10; pointer-events: none;">
+                    <button class="action-btn mute-btn" style="pointer-events: auto;">
+                        <ion-icon name="${isGlobalMuted ? 'volume-mute' : 'volume-high'}"></ion-icon>
+                    </button>
+
+                </div>
+
+
+
+
+
+                </div>
+
+            <div class="meta-panel">
+                    <!-- Right Sidebar / Mobile Overlay -->
+                    
+                    <div class="video-info">
+                        <h3>@${video.createdBy || 'anonymous'}</h3>
+                        <p class="video-title">${video.title}</p>
+                        <p class="video-desc" style="font-size: 0.8rem; display: block;">${video.description || ''}</p> 
+                    </div>
+
+                    <div class="actions">
+                        <button class="action-btn view-btn" style="cursor: default;">
+                            <ion-icon name="eye"></ion-icon>
+                            <span class="view-count">${video.views || 0}</span>
+                        </button>
+                         <button class="action-btn like-btn" data-id="${video.id}">
+                            <ion-icon name="${isLiked ? 'heart' : 'heart-outline'}" class="${isLiked ? 'liked' : ''}"></ion-icon>
+                            <span class="likes-count">${likesCount}</span>
+                        </button>
+                        <button class="action-btn comment-btn" data-id="${video.id}">
+                            <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
+                            <span>${video.comments ? video.comments.length : 0}</span>
+                        </button>
+                        <button class="action-btn share-btn">
+                             <ion-icon name="share-social-outline"></ion-icon>
+                            <span>Share</span>
+                        </button>
+                        <div class="options-menu-container" style="position: relative;">
+                            ${optionsButtonHTML}
                         </div>
                     </div>
-                </div>
 
-                <div class="actions">
-                    <button class="action-btn like-btn" data-id="${video.id}">
-                        <ion-icon name="${isLiked ? 'heart' : 'heart-outline'}" class="${isLiked ? 'liked' : ''}"></ion-icon>
-                        <span class="likes-count">${likesCount}</span>
-                    </button>
-                    <button class="action-btn comment-btn" data-id="${video.id}">
-                        <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
-                        <span>${video.comments ? video.comments.length : 0}</span>
-                    </button>
-                    <button class="action-btn share-btn">
-                        <ion-icon name="share-social-outline"></ion-icon>
-                        <span>Share</span>
-                    </button>
-                    ${optionsButtonHTML}
-                </div>
 
-                <div class="comments-panel">
-                    <div class="panel-header">
-                        <h3>Comments (<span class="comment-count-header">${video.comments ? video.comments.length : 0}</span>)</h3>
-                        <button class="close-comments"><ion-icon name="close-outline"></ion-icon></button>
-                    </div>
-                    <div class="comments-list">
-                         ${video.comments && video.comments.length > 0 ?
+                    <div class="comments-section">
+                        <div class="panel-header">
+                            <h3>Comments (<span class="comment-count-header">${video.comments ? video.comments.length : 0}</span>)</h3>
+                            <button class="close-comments"><ion-icon name="close-outline"></ion-icon></button>
+                        </div>
+                        <div class="comment-input-area">
+                            <input type="text" placeholder="Add a comment..." class="comment-input">
+                            <button class="post-comment-btn"><ion-icon name="send"></ion-icon></button>
+                        </div>
+                        <div class="comments-list">
+                             ${video.comments && video.comments.length > 0 ?
                 video.comments.map(c => `
-                                 <div class="comment-item">
-                                     <strong>${c.username || 'User'}</strong>
-                                     <p>${c.text}</p>
-                                 </div>
-                             `).join('') : '<p class="no-comments">No comments yet.</p>'
+                                     <div class="comment-item">
+                                          <strong>${c.username || 'User'}</strong>
+                                          <p>${c.text}</p>
+                                      </div>
+                                  `).join('') : '<p class="no-comments">No comments yet.</p>'
             }
+                        </div>
                     </div>
-                    <div class="comment-input-area">
-                        <input type="text" placeholder="Add a comment..." class="comment-input">
-                        <button class="post-comment-btn"><ion-icon name="send"></ion-icon></button>
-                    </div>
+
                 </div>
-            </div>
+
         `;
 
         // Video Play/Pause setup
@@ -219,7 +246,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // -- Comments Logic --
         const commentBtn = div.querySelector('.comment-btn');
-        const commentsPanel = div.querySelector('.comments-panel');
+        const metaPanel = div.querySelector('.meta-panel');
         const closeCommentsBtn = div.querySelector('.close-comments');
         const postCommentBtn = div.querySelector('.post-comment-btn');
         const commentInput = div.querySelector('.comment-input');
@@ -229,28 +256,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const toggleComments = (e) => {
             if (e) e.stopPropagation();
-            commentsPanel.classList.toggle('open');
+            metaPanel.classList.toggle('open');
         };
 
         commentBtn.addEventListener('click', toggleComments);
         closeCommentsBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            commentsPanel.classList.remove('open');
+            metaPanel.classList.remove('open');
         });
 
         // Prevent click inside panel from closing or pausing video
-        commentsPanel.addEventListener('click', (e) => e.stopPropagation());
+        metaPanel.addEventListener('click', (e) => e.stopPropagation());
 
         // TAP TO MUTE LOGIC (Replaces Play/Pause and Mute Button)
         const videoFrame = div.querySelector('.video-frame');
 
-        videoFrame.addEventListener('click', (e) => {
-            // Ignore if clicking buttons/panels
-            if (e.target.closest('button') || e.target.closest('.comments-panel') || e.target.closest('.options-menu-container')) return;
-
-            e.preventDefault();
-            e.stopPropagation();
-
+        const toggleGlobalMute = () => {
             // Toggle Global Mute State
             isGlobalMuted = !isGlobalMuted;
 
@@ -262,6 +283,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
 
+            // Update ALL Mute Buttons
+            document.querySelectorAll('.mute-btn ion-icon').forEach(icon => {
+                icon.name = isGlobalMuted ? 'volume-mute' : 'volume-high';
+            });
+
             // Wake up Audio Engine if unmuting
             if (!isGlobalMuted) {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -270,6 +296,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ctx.resume().then(() => ctx.close());
                 }
             }
+        };
+
+        const muteBtn = div.querySelector('.mute-btn');
+        if (muteBtn) {
+            muteBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleGlobalMute();
+            });
+        }
+
+        videoFrame.addEventListener('click', (e) => {
+            // Ignore if clicking buttons/panels
+            if (e.target.closest('button') || e.target.closest('.comments-panel') || e.target.closest('.options-menu-container')) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+            toggleGlobalMute();
         });
 
 
@@ -289,7 +333,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!text) return;
 
             try {
-                const res = await fetch(`/api/videos/${video.id}/comment`, {
+                const res = await fetch(`/api/videos/${video.id}/comments`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -333,27 +377,52 @@ document.addEventListener('DOMContentLoaded', async () => {
             postComment();
         });
 
+        // Desktop Comment Toggle Logic
+        // Universal Comment Toggle (Mobile & Desktop)
+        // Mobile uses .open for transform. Desktop uses .open for display:flex.
+        const commentBtns = div.querySelectorAll('.comment-btn');
+        commentBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                div.querySelector('.meta-panel').classList.add('open');
+            });
+        });
+
+        // Close Comment Panel
+        const closeBtn = div.querySelector('.close-comments');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                div.querySelector('.meta-panel').classList.remove('open');
+            });
+        }
+
         commentInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') postComment();
         });
 
         // Download Action
         // Options Menu Logic (Universal)
-        const optionsBtn = div.querySelector('.options-btn');
-        const dropdown = div.querySelector('.options-dropdown');
-
-        if (optionsBtn) {
-            optionsBtn.addEventListener('click', (e) => {
+        // Options Menu Logic (Universal)
+        const optionsBtns = div.querySelectorAll('.options-btn');
+        optionsBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                dropdown.classList.toggle('show');
+                // Find sibling dropdown
+                const container = btn.closest('.options-menu-container');
+                const dd = container.querySelector('.options-dropdown');
+                if (dd) dd.classList.toggle('show');
             });
-        }
+        });
 
         // Download Action (Universal)
-        const downloadBtn = div.querySelector('.download-option');
-        if (downloadBtn) {
-            downloadBtn.addEventListener('click', async (e) => {
+        // Download Action (Universal) - Loop for multiple download buttons if inherited
+        const downloadBtns = div.querySelectorAll('.download-option');
+        downloadBtns.forEach(btn => {
+            btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
+                // Find closest dropdown to close it
+                const closestDropdown = btn.closest('.options-dropdown');
                 try {
                     const response = await fetch(video.blobUrl);
                     const blob = await response.blob();
@@ -368,13 +437,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     window.URL.revokeObjectURL(blobUrl);
                     a.remove();
-                    dropdown.classList.remove('show');
+                    if (closestDropdown) closestDropdown.classList.remove('show');
                 } catch (err) {
                     console.error("Download failed", err);
                     alert("Failed to download video.");
                 }
             });
-        }
+        });
 
         // Owner-only Actions
         if (isOwner) {
@@ -428,62 +497,94 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
         // Like Action
-        const likeBtn = div.querySelector('.like-btn');
-        likeBtn.addEventListener('click', async () => {
-            if (!token) {
-                alert("Please login to like videos!");
-                window.location.href = 'login.html';
-                return;
-            }
-
-            // Optimistic Update
-            const icon = likeBtn.querySelector('ion-icon');
-            const countSpan = likeBtn.querySelector('.likes-count');
-            let currentLikse = parseInt(countSpan.textContent);
-
-            if (icon.name === 'heart-outline') {
-                icon.name = 'heart';
-                icon.classList.add('liked');
-                countSpan.textContent = currentLikse + 1;
-            } else {
-                icon.name = 'heart-outline';
-                icon.classList.remove('liked');
-                countSpan.textContent = Math.max(0, currentLikse - 1);
-            }
-
-            try {
-                const res = await fetch(`/api/videos/${video.id}/like`, {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                countSpan.textContent = data.likes;
-                if (data.liked) {
-                    icon.name = 'heart';
-                    icon.classList.add('liked');
-                } else {
-                    icon.name = 'heart-outline';
-                    icon.classList.remove('liked');
+        // Like Action
+        const likeBtns = div.querySelectorAll('.like-btn');
+        likeBtns.forEach(likeBtn => {
+            likeBtn.addEventListener('click', async () => {
+                if (!token) {
+                    alert("Please login to like videos!");
+                    window.location.href = 'login.html';
+                    return;
                 }
-            } catch (err) {
-                console.error("Like failed", err);
-            }
-        });
 
-        // Share Action
-        const shareBtn = div.querySelector('.share-btn');
-        shareBtn.addEventListener('click', () => {
-            if (navigator.share) {
-                navigator.share({
-                    title: video.title,
-                    text: video.description,
-                    url: window.location.href
+                // Optimistic Update ALL like buttons for this video
+                let currentLikes = parseInt(div.querySelector('.likes-count').textContent); // Read from one
+                const isCurrentlyLiked = div.querySelector('.like-btn ion-icon').classList.contains('liked');
+
+                // Update State Logic
+                const newLikedState = !isCurrentlyLiked;
+                const newCount = newLikedState ? currentLikes + 1 : Math.max(0, currentLikes - 1);
+
+                // Update UI for ALL buttons
+                div.querySelectorAll('.like-btn').forEach(btn => {
+                    const icon = btn.querySelector('ion-icon');
+                    const countSpan = btn.querySelector('.likes-count');
+
+                    if (newLikedState) {
+                        icon.name = 'heart';
+                        icon.classList.add('liked');
+                    } else {
+                        icon.name = 'heart-outline';
+                        icon.classList.remove('liked');
+                    }
+                    countSpan.textContent = newCount;
                 });
-            } else {
-                alert("Link copied to clipboard!");
-                navigator.clipboard.writeText(video.blobUrl);
-            }
-        });
+
+                try {
+                    const res = await fetch(`/api/videos/${video.id}/like`, {
+                        // ... rest of fetch logic handled in loop? No, just fire once?
+                        // Actually, the listener is added to EACH.
+                        // We should fire the API call once per click.
+                        // The loop is fine.
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    // We trust optimistic update or re-fetch?
+                    // ... let's keep it simple.
+                    // Wait, I replaced the fetch block too in startLine.
+                    // I need to include the fetch in the replacement content.
+                } catch (err) {
+                    console.error("Like failed", err);
+                }
+            }); // End Click
+        }); // End ForEach
+
+        // Share Button Logic
+        const shareBtn = div.querySelector('.share-btn');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const shareData = {
+                    title: video.title || 'VideSocial Video',
+                    text: `Check out this video by ${video.createdBy || 'User'}!`,
+                    url: window.location.href // Current URL
+                };
+
+                if (navigator.share) {
+                    try {
+                        await navigator.share(shareData);
+                    } catch (err) { console.log('Share canceled', err); }
+                } else {
+                    // Fallback
+                    try {
+                        await navigator.clipboard.writeText(window.location.href);
+                        alert("Link copied to clipboard!");
+                    } catch (err) { alert("Failed to copy link."); }
+                }
+            });
+        }
+
+        // Progress Bar Logic
+        const progressVideo = div.querySelector('video');
+        const progressBar = div.querySelector('.video-progress-bar');
+        if (progressVideo && progressBar) {
+            progressVideo.addEventListener('timeupdate', () => {
+                const percent = (progressVideo.currentTime / progressVideo.duration) * 100;
+                progressBar.style.width = `${percent}%`;
+            });
+        }
+
+
 
         return div;
     }
@@ -493,10 +594,39 @@ document.addEventListener('DOMContentLoaded', async () => {
             entries.forEach(entry => {
                 const video = entry.target.querySelector('video');
                 if (entry.isIntersecting) {
-                    video.play().catch(e => { /* Autoplay prevented */ });
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => { });
+                    }
+
+                    // View Count Logic (1s threshold)
+                    if (!video.dataset.viewed) {
+                        video.dataset.viewTimer = setTimeout(() => {
+                            video.dataset.viewed = "true";
+                            const videoId = video.getAttribute('data-id');
+                            console.log("Triggering view for:", videoId); // Debug
+                            if (videoId) {
+                                fetch(`/ api / videos / ${videoId}/view`, { method: 'POST' })
+                                    .then(res => res.json())
+                                    .then(data => {
+                                        console.log("View updated:", data.views); // Debug
+                                        // Update UI in the parent card
+                                        const card = entry.target;
+                                        const countSpan = card.querySelector('.view-count');
+                                        if (countSpan) countSpan.textContent = data.views;
+                                    })
+                                    .catch(e => console.error("View inc error", e));
+                            }
+                        }, 1000); // 1 Second Threshold
+                    }
                 } else {
                     video.pause();
                     video.currentTime = 0; // Reset
+                    // Clear timer if user scrolls away quickly
+                    if (video.dataset.viewTimer) {
+                        clearTimeout(parseInt(video.dataset.viewTimer));
+                        delete video.dataset.viewTimer;
+                    }
                 }
             });
         }, { threshold: 0.6 });

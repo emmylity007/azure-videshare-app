@@ -1,308 +1,889 @@
+/* =========================================
+   VideSocial - Recreated Styles (TikTok Clone)
+   ========================================= */
+
 :root {
-    --primary-color: #6366f1;
-    --primary-hover: #4f46e5;
-    --bg-color: #0f172a;
-    --card-bg: #1e293b;
-    --text-color: #f8fafc;
-    --text-muted: #94a3b8;
-    --input-bg: #334155;
-    --border-color: #475569;
+    /* Colors */
+    --bg-color: #000000;
+    /* Deep Black */
+    --card-bg: #121212;
+    --text-color: #ffffff;
+    --text-muted: #rgba(255, 255, 255, 0.7);
+    --primary-color: #fe2c55;
+    /* TikTok Red */
+    --primary-hover: #e0264a;
+    --secondary-color: #25f4ee;
+    /* TikTok Blue */
+    --border-color: rgba(255, 255, 255, 0.12);
+    --overlay-bg: rgba(0, 0, 0, 0.4);
+
+    /* Layout */
+    --nav-height: 60px;
+    --header-height: 60px;
+    --sidebar-width: 72px;
+    /* Reduced from 250px */
+    /* Desktop */
+    --sidebar-collapsed: 72px;
 }
 
-* {
+/* Base Reset */
+*,
+*::before,
+*::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    -webkit-tap-highlight-color: transparent;
-    /* Removes blue tap box on mobile */
-}
-
-button {
-    outline: none !important;
-    border: none !important;
-}
-
-button:focus,
-button:active,
-button:hover {
-    outline: none !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-
-/* Global Scrollbar Hide */
-* {
-    scrollbar-width: none;
-    /* Firefox */
-    -ms-overflow-style: none;
-    /* IE/Edge */
-}
-
-*::-webkit-scrollbar {
-    display: none;
-    /* Chrome/Safari/Webkit */
 }
 
 body {
     font-family: 'Outfit', sans-serif;
     background-color: var(--bg-color);
     color: var(--text-color);
-    line-height: 1.6;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-}
-
-.container {
     width: 100%;
-    max-width: 600px;
-    padding: 2rem;
+    height: 100vh;
+    overflow: hidden;
+    /* App-like feel */
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    /* Mobile: Col (Header - Feed - Nav) */
 }
 
-header {
-    text-align: center;
+/* =========================================
+   1. Navigation & Header
+   ========================================= */
+
+/* User Profile (Integrated into Nav) */
+.user-profile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: none;
+    height: auto;
+    width: auto;
+    position: static;
+    /* Flow in nav */
+    pointer-events: auto;
+    cursor: pointer;
 }
 
-header h1 {
-    font-size: 2.5rem;
-    font-weight: 600;
-    background: linear-gradient(to right, #818cf8, #c084fc);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 0.5rem;
+.user-profile img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
-header p {
-    color: var(--text-muted);
+.profile-text {
+    display: none;
+    /* Hide text on mobile nav to save space */
 }
 
-.upload-card {
-    background: var(--card-bg);
-    border-radius: 1rem;
-    padding: 2rem;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--border-color);
-}
+/* Icon only on mobile header */
 
-.upload-card h2 {
-    margin-bottom: 1.5rem;
-    font-size: 1.5rem;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 0.5rem;
-}
-
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-    color: var(--text-muted);
-}
-
-.form-group input[type="text"],
-.form-group input[type="email"],
-.form-group input[type="password"],
-.form-group textarea {
+/* Bottom Navigation (Mobile Default) */
+.sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
     width: 100%;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    border: 1px solid var(--border-color);
-    background-color: var(--input-bg);
-    color: var(--text-color);
-    font-family: inherit;
-    font-size: 1rem;
-    transition: border-color 0.2s;
+    height: var(--nav-height);
+    background: #000;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 100;
 }
 
-.form-group input[type="text"]:focus,
-.form-group textarea:focus {
-    outline: none;
-    border-color: var(--primary-color);
+.nav-item {
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.6);
+    transition: color 0.2s;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.file-input-group {
-    border: 2px dashed var(--border-color);
-    border-radius: 0.5rem;
-    text-align: center;
-    padding: 2rem;
-    transition: border-color 0.2s, background-color 0.2s;
-    cursor: pointer;
+.nav-item.active,
+.nav-item:hover {
+    color: white;
 }
 
-.file-input-group:hover {
-    border-color: var(--primary-color);
-    background-color: rgba(99, 102, 241, 0.1);
+.nav-top,
+.nav-bottom {
+    display: contents;
+    /* Flatten structure for row layout */
 }
 
-.file-label {
-    cursor: pointer;
+/* Hide Logout on mobile nav to save space? Keep it for now */
+
+/* =========================================
+   2. Video Feed Container
+   ========================================= */
+
+.video-feed-container {
+    flex: 1;
+    /* Take remaining space */
     width: 100%;
     height: 100%;
-    display: block;
-    color: var(--primary-color);
-    font-weight: 600;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    padding-bottom: var(--nav-height);
+    /* Nav spacing */
+    scrollbar-width: none;
+    /* Hide scrollbar */
 }
 
-input[type="file"] {
+.video-feed-container::-webkit-scrollbar {
     display: none;
 }
 
-button {
+/* Video Card (One full screen unit) */
+.video-card {
+    position: relative;
     width: 100%;
-    padding: 1rem;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
+    height: 100%;
+    /* Full viewport */
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-button:hover {
-    background-color: var(--primary-hover);
-}
-
-button:active {
-    transform: scale(0.98);
-}
-
-.progress-container {
-    margin-bottom: 1.5rem;
-    background-color: var(--input-bg);
-    border-radius: 0.5rem;
+/* Video Frame & Player */
+.video-frame {
+    position: relative;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
-    height: 1.5rem;
+}
+
+.video-player {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Immersive Full Screen */
+    display: block;
+}
+
+/* Overlay Top (Mute) */
+.overlay-top {
+    position: absolute;
+    top: 60px;
+    /* Below header */
+    left: 1rem;
+    z-index: 10;
+}
+
+/* =========================================
+   3. Meta Panel (Responsive Core)
+   ========================================= */
+
+/* Mobile: Overlay Mode */
+.meta-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    /* Pass clicks to video */
+    z-index: 20;
+}
+
+/* Video Info (Bottom Left) */
+.meta-panel .video-info {
+    position: absolute;
+    bottom: 80px;
+    /* Above nav + gap */
+    left: 1rem;
+    width: 75%;
+    color: white;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+    pointer-events: auto;
+    text-align: left;
+}
+
+.video-info h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.2rem;
+    display: inline-block;
+    font-weight: 600;
+}
+
+.video-title {
+    font-size: 0.95rem;
+    margin-bottom: 0.2rem;
+}
+
+.video-desc {
+    font-size: 0.85rem;
+    opacity: 0.9;
+    display: block;
+}
+
+/* Actions (Right Side Column) */
+.meta-panel .actions {
+    position: absolute;
+    bottom: 100px;
+    right: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    align-items: center;
+    pointer-events: auto;
+}
+
+.action-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+    transition: transform 0.1s;
+}
+
+.action-btn:active {
+    transform: scale(0.9);
+}
+
+.action-btn span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+.action-btn ion-icon.liked {
+    color: var(--primary-color);
+}
+
+/* Comments Section (Drawer Logic) */
+.comments-section {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 70vh;
+    /* Drawer height */
+    background: rgba(0, 0, 0, 0.95);
+    border-radius: 16px 16px 0 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 200;
+    transform: translateY(100%);
+    /* Hidden */
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.meta-panel.open .comments-section {
+    transform: translateY(0);
+    /* Visible */
+}
+
+.panel-header {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.close-comments {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.comments-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.comment-item {
+    margin-bottom: 1rem;
+}
+
+.comment-item strong {
+    color: #ccc;
+    font-size: 0.8rem;
+    display: block;
+}
+
+.comment-item p {
+    font-size: 0.9rem;
+}
+
+.comment-input-area {
+    padding: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.comment-input {
+    flex: 1;
+    background: #333;
+    border: none;
+    border-radius: 20px;
+    padding: 0.6rem 1rem;
+    color: white;
+}
+
+.post-comment-btn {
+    background: var(--primary-color);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+}
+
+/* =========================================
+   4. Upload Modal
+   ========================================= */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--card-bg);
+    width: 90%;
+    max-width: 500px;
+    padding: 2rem;
+    border-radius: 12px;
     position: relative;
     border: 1px solid var(--border-color);
 }
 
-.progress-bar {
-    height: 100%;
-    background-color: var(--primary-color);
-    width: 0%;
-    transition: width 0.1s linear;
-}
-
-#progressText {
+.close-modal {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #aaa;
 }
 
-#statusMessage {
-    margin-top: 1rem;
-    text-align: center;
-    font-size: 0.9rem;
-}
-
-#logoutBtn {
-    background-color: transparent;
-    border: 1px solid var(--border-color);
+/* Form styling simplified */
+.form-group {
     margin-bottom: 1rem;
-    width: auto;
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
 }
 
-#logoutBtn:hover {
-    background-color: var(--card-bg);
-    border-color: var(--primary-color);
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #ccc;
 }
 
-/* Options Menu (In Sidebar) */
-/* Container handles toggle state - no specific styles needed yet */
+input[type="text"],
+textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #222;
+    color: white;
+}
 
-/* Revert top/right fixed pos from previous step if any */
+button[type="submit"] {
+    width: 100%;
+    padding: 1rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+/* =========================================
+   5. Desktop Responsive Override
+   ========================================= */
+@media (min-width: 769px) {
+    body {
+        flex-direction: row;
+        /* Sidebar + Feed */
+    }
+
+    /* Left Sidebar Navigation */
+    .sidebar {
+        position: relative;
+        width: var(--sidebar-width);
+        height: 100vh;
+        border-top: none;
+        border-right: 1px solid var(--border-color);
+        flex-direction: column;
+        justify-content: flex-start;
+        padding-top: 2rem;
+        bottom: auto;
+        /* Reset */
+    }
+
+    .nav-top {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        align-items: center;
+        /* Center icons */
+        padding-left: 0;
+        gap: 1rem;
+    }
+
+    .nav-bottom {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        align-items: center;
+        /* Center icons */
+        padding-left: 0;
+        margin-top: auto;
+        padding-bottom: 2rem;
+    }
+
+    .nav-item {
+        font-size: 1.5rem;
+        flex-direction: column;
+        gap: 0;
+        justify-content: center;
+        /* Center content */
+        width: 100%;
+    }
+
+    /* Add text labels via pseudo-elements or specific implementation if HTML allows. HTML doesn't show text, relying on icon. */
+
+    .user-profile {
+        position: relative;
+        /* Relative for dropdown positioning */
+        width: 100%;
+        padding: 1rem 0;
+        /* Remove side padding */
+        margin-top: auto;
+        background: none;
+        justify-content: center;
+        /* Center profile */
+        gap: 0;
+    }
+
+    .profile-text {
+        display: none !important;
+        /* Hide text for icon-only mode */
+    }
+
+    /* Feed Layout */
+    .video-feed-container {
+        padding-bottom: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        /* Center the feed */
+    }
+
+    .video-card {
+        width: 100%;
+        max-width: 900px;
+        /* Limit width */
+        height: 100vh;
+        max-height: 100vh;
+        background: #000;
+        padding: 2rem 0;
+        /* Padding around card */
+        /* Split view inside card */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Video Frame (Left Side) */
+    .video-frame {
+        width: auto;
+        height: 100%;
+        aspect-ratio: 9/16;
+        border-radius: 12px;
+        /* margin-right: 1rem; */
+        /* If separate */
+    }
+
+    .video-player {
+        border-radius: 12px;
+    }
+
+    /* Meta Panel (Right Side Sidebar) */
+    .meta-panel {
+        position: relative;
+        width: 350px;
+        height: 100%;
+        margin-left: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        /* Slight BG for contrast */
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        pointer-events: auto;
+        top: auto;
+        left: auto;
+        /* Reset absolute */
+    }
+
+    /* Reset Info */
+    .meta-panel .video-info {
+        position: static;
+        width: 100%;
+        padding: 1.5rem;
+        background: transparent;
+        text-shadow: none;
+    }
+
+    .video-info h3 {
+        font-size: 1.2rem;
+    }
+
+    .video-title {
+        font-size: 1rem;
+    }
+
+    .video-desc {
+        color: #ddd;
+    }
+
+    /* Reset Actions */
+    .meta-panel .actions {
+        position: static;
+        flex-direction: row;
+        width: 100%;
+        justify-content: space-around;
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .action-btn {
+        font-size: 1.5rem;
+        flex-direction: row;
+        gap: 0.5rem;
+    }
+
+    .action-btn span {
+        margin-top: 0;
+        font-size: 0.9rem;
+    }
+
+    /* Reset Comments (Permanent List) */
+    .comments-section {
+        position: static;
+        width: 100%;
+        flex: 1;
+        /* Fill remaining height */
+        height: auto;
+        background: transparent;
+        transform: none;
+        border-radius: 0;
+        border-top: none;
+        display: flex;
+        /* Always visible */
+    }
+
+    .panel-header .close-comments {
+        display: none;
+    }
+
+    /* No close btn on desktop */
+}
+
+/* =========================================
+   6. Options Menu (Dropdown) -> Appended
+   ========================================= */
+
+.options-menu-container {
+    position: relative;
+    /* Container for button + dropdown */
+}
+
+.options-btn ion-icon {
+    font-size: 1.8rem;
+}
 
 .options-dropdown {
-    display: none;
     position: absolute;
-    right: 50px;
-    /* Show to the left of the button */
-    bottom: 0;
-    background: var(--card-bg);
+    bottom: 100%;
+    /* Popup upwards */
+    right: 0;
+    min-width: 160px;
+    background-color: #222;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 0.5rem;
-    min-width: 140px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
-    z-index: 200;
+    display: none;
+    flex-direction: column;
+    gap: 0.2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    margin-bottom: 10px;
+    /* Gap from button */
 }
 
 .options-dropdown.show {
-    display: block;
+    display: flex;
     animation: fadeIn 0.1s ease-out;
+}
+
+.option-item {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 0.8rem 1rem;
+    text-align: left;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    border-radius: 4px;
+    transition: background 0.2s;
+    width: 100%;
+}
+
+.option-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.option-item ion-icon {
+    font-size: 1.2rem;
+    color: #ccc;
+}
+
+.delete-option {
+    color: #ff4d4d;
+}
+
+.delete-option ion-icon {
+    color: #ff4d4d;
 }
 
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: scale(0.9);
+        transform: translateY(10px);
     }
 
     to {
         opacity: 1;
-        transform: scale(1);
+        transform: translateY(0);
     }
 }
 
-.option-item {
+/* =========================================
+   7. Profile Dropdown (Popup) -> Appended
+   ========================================= */
+
+.profile-dropdown {
+    position: absolute;
+    bottom: 100%;
+    /* Popup upwards from nav */
+    right: 0;
+    width: max-content;
+    min-width: 140px;
+    background: #222;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.5rem;
+    display: none;
+    flex-direction: column;
+    gap: 0.2rem;
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
+    z-index: 200;
+    margin-bottom: 15px;
+    /* Gap */
+}
+
+.user-profile.active .profile-dropdown {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    width: 100%;
-    padding: 0.8rem;
-    border: none;
-    background: none;
-    color: var(--text-color);
+    animation: slideUp 0.2s ease-out;
+}
+
+.dropdown-item {
+    padding: 0.8rem 1rem;
+    color: white;
     cursor: pointer;
     font-size: 0.95rem;
-    text-align: left;
-    border-radius: 4px;
-    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    border-radius: 6px;
+    transition: background 0.2s;
 }
 
-.option-item:hover {
-    background: var(--hover-color);
+.dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
-.option-item.delete-item {
-    color: #ef4444;
+.dropdown-item ion-icon {
+    font-size: 1.2rem;
 }
 
-footer {
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 0.8rem;
+.logout-item {
+    color: #ff4d4d;
 }
 
-/* Auth Pages */
+.logout-item ion-icon {
+    color: #ff4d4d;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (min-width: 769px) {
+    .profile-dropdown {
+        left: 0;
+        right: auto;
+        width: max-content;
+        min-width: 140px;
+        margin-bottom: 5px;
+    }
+}
+
+/* =========================================
+   8. Profile Avatar & Guest Styles -> Appended
+   ========================================= */
+
+.profile-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #333;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    transition: transform 0.2s;
+}
+
+.user-profile:hover .profile-avatar {
+    transform: scale(1.1);
+    border-color: white;
+}
+
+.login-item {
+    color: var(--secondary-color);
+}
+
+.login-item ion-icon {
+    color: var(--secondary-color);
+}
+
+/* Ensure text is completely hidden on desktop if JS generates it */
+@media (min-width: 769px) {
+    .profile-text {
+        display: none !important;
+    }
+}
+/* =========================================
+   9. Video Progress Bar -> Appended
+   ========================================= */
+.video-progress-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.2);
+    z-index: 20;
+    pointer-events: none;
+}
+
+.video-progress-bar {
+    height: 100%;
+    background: #fe2c55; /* TikTok Red */
+    width: 0%;
+    transition: width 0.1s linear;
+}
+
+/* =========================================
+   10. Auth Pages (Login/Signup) -> Appended
+   ========================================= */
+
 .auth-container {
-    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
+    padding: 1rem;
+    background: var(--bg-color); /* Same as feed bg */
+}
+
+.auth-container header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-container h1 {
+    font-size: 2.5rem;
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+.auth-container p {
+    color: #888;
 }
 
 .auth-card {
-    margin-top: 1rem;
+    background: var(--card-bg);
+    width: 100%;
+    max-width: 400px; /* Slightly narrower than upload modal for login */
+    padding: 2.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
 .auth-link {
     text-align: center;
-    margin-top: 1rem;
+    margin-top: 1.5rem;
     font-size: 0.9rem;
-    color: var(--text-muted);
+    color: #aaa;
 }
 
 .auth-link a {
@@ -315,657 +896,21 @@ footer {
     text-decoration: underline;
 }
 
-#authMessage {
-    margin-top: 1rem;
-    text-align: center;
-    font-weight: 600;
-}
-
-/* Feed Layout */
-.feed-body {
-    background-color: black;
-    overflow: hidden;
-    /* Hide main scrollbar */
-    display: flex;
-    /* Sidebar layout */
-    margin: 0;
-}
-
-/* Sidebar Navigation */
-.sidebar {
-    width: 80px;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.9);
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    padding: 2rem 0;
-    z-index: 100;
-    flex-shrink: 0;
-    /* Prevent shrinking */
-}
-
-/* User Profile in Sidebar */
-/* User Profile (Floating Top Right on Desktop) */
-.user-profile {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    padding: 0.5rem 1rem;
-    position: fixed;
-    top: 1rem;
-    right: 2rem;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(5px);
-    border-radius: 50px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    z-index: 1000;
-    gap: 0.8rem;
-    transition: 0.3s;
-}
-
-.user-profile:hover {
-    background: rgba(0, 0, 0, 0.8);
-}
-
-.profile-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--secondary-color, #c084fc), var(--primary-color));
-    color: white;
-    font-size: 1.2rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 0;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-}
-
-.profile-text {
-    text-align: left;
-    display: flex;
-    flex-direction: column;
-}
-
-.welcome-label {
-    font-size: 0.65rem;
-    color: #ccc;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    display: block;
-}
-
-.username-label {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-color);
-    text-transform: capitalize;
-}
-
-.nav-top {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    align-items: center;
-}
-
-.nav-bottom {
-    margin-top: auto;
-}
-
-.nav-item {
-    color: var(--text-muted);
-    font-size: 1.8rem;
-    transition: color 0.2s;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
-}
-
-.nav-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: white;
-}
-
-.nav-item.active {
-    color: var(--primary-color);
-    /* Highlight active */
-}
-
-/* Profile Dropdown Logic (Desktop) */
-.user-profile {
-    position: fixed;
-    /* Keep existing */
-    /* ... existing props ... */
-    cursor: pointer;
-}
-
-.profile-dropdown {
-    position: absolute;
-    top: 60px;
-    right: 0;
-    background: rgba(15, 23, 42, 0.95);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 0.5rem;
-    width: 160px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(-10px);
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-    z-index: 1001;
-}
-
-.user-profile.active .profile-dropdown {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(0);
-}
-
-.dropdown-item {
-    padding: 0.8rem 1rem;
+/* Ensure inputs in auth forms are styled */
+.auth-card input[type='email'],
+.auth-card input[type='password'],
+.auth-card input[type='text'] {
+    width: 100%;
+    padding: 1rem;
     border-radius: 8px;
-    color: var(--text-color);
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.dropdown-item:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.logout-item {
-    color: #ef4444;
-    /* Red for sign out */
-}
-
-.logout-item:hover {
-    background: rgba(239, 68, 68, 0.2);
-}
-
-/* Mobile Dropdown Position */
-@media (max-width: 768px) {
-    .profile-dropdown {
-        top: 65px;
-        right: 1rem;
-    }
-}
-
-.video-feed-container {
-    height: 100vh;
-    flex: 1;
-    /* Fill remaining space */
-    overflow-y: scroll;
-    scroll-snap-type: y mandatory;
-    scroll-behavior: smooth;
-    position: relative;
-}
-
-
-.video-card {
-    height: 100vh;
-    width: 100%;
-    scroll-snap-align: start;
-    position: relative;
-    background-color: #000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    /* Hide overflow if aspect ratio mismatch */
-    padding-block: 10px;
-    /* 10px spacing top and bottom */
-}
-
-/* 9:16 Video Frame */
-.video-frame {
-    height: 100%;
-    aspect-ratio: 9 / 16;
-    max-width: 100vw;
-    position: relative;
-    background-color: #000;
-    border-radius: 16px;
-    /* Curious corners */
-    overflow: hidden;
-    /* Clip video to corners */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-    /* Optional: adds nice depth */
-}
-
-.video-player {
-    height: 100%;
-    width: 100%;
-    object-fit: contain;
-    /* Show full video without cropping */
-    background-color: black;
-}
-
-/* Overlay UI */
-/* Overlay UI */
-.overlay {
-    position: absolute;
-    bottom: 5px;
-    /* Above nav */
-    left: 0;
-    width: 100%;
-    padding: 1rem;
-    /* Background removed as requested */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    pointer-events: none;
-    /* Let clicks pass to video */
-}
-
-/* mute-btn logic previously here - removed to use standard action button */
-
-
-.overlay-content {
-    display: flex;
-    justify-content: flex-start;
-    /* Just align text to left */
-    align-items: flex-end;
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
-    pointer-events: auto;
-    /* Re-enable clicks */
-}
-
-.video-info h3 {
-    margin-bottom: 0.2rem;
-    font-size: 1.1rem;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-    display: inline-block;
-    cursor: pointer;
-    text-transform: capitalize;
-}
-
-.video-title {
-    font-size: 0.95rem;
-    margin-bottom: 0.2rem;
-    font-weight: 300;
-    text-transform: capitalize;
-}
-
-.video-info {
-
-    flex: 1;
+    border: 1px solid #333;
+    background: #222;
     color: white;
-    /* margin-right: 1rem; Removed as actions are separate */
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-    padding-right: 3rem;
-    /* Prevent text overlapping buttons */
+    margin-top: 0.2rem;
+    font-size: 1rem;
 }
 
-/* Sidebar for Actions (Mute + Interactions) */
-.actions {
-    position: absolute;
-    top: 0;
-    right: 0;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: center;
-    padding: 1rem;
-    /* Top padding 1rem, Bottom padding for Nav */
-    z-index: 10;
-    gap: 0;
-    /* Reduced from 1rem */
-}
-
-.action-btn {
-    background: none;
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    color: white;
-    font-size: 1.6rem;
-    /* Reduced from 2rem */
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    transition: transform 0.1s;
-}
-
-.action-btn:active {
-    transform: scale(0.9);
-}
-
-.action-btn:hover,
-.action-btn:focus,
-.action-btn:active {
-    background: none !important;
-    background-color: transparent !important;
-}
-
-.action-btn span {
-    font-size: 0.7rem;
-    /* Reduced from 0.8rem */
-    margin-top: 0.3rem;
-    font-weight: 600;
-}
-
-.action-btn ion-icon.liked {
-    color: #ef4444;
-    /* Red heart */
-}
-
-/* Comments Modal (Simple overlay) */
-/* Comments Panel (Right Side Drawer on Desktop) */
-.comments-panel {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 350px;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.9);
-    /* Opaque background */
-    backdrop-filter: blur(10px);
-    border-left: 1px solid rgba(255, 255, 255, 0.1);
-    transform: translateX(100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 200;
-    display: flex;
-    flex-direction: column;
-}
-
-.comments-panel.open {
-    transform: translateX(0);
-}
-
-.panel-header {
-    padding: 1rem;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.comments-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1rem;
-}
-
-.comment-input-area {
-    padding: 1rem;
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    gap: 0.5rem;
-}
-
-/* Upload Modal */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 200;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(5px);
-    justify-content: center;
-    align-items: center;
-}
-
-.modal.show {
-    display: flex;
-}
-
-.modal-content {
-    background-color: var(--card-bg);
-    margin: 10% auto;
-    padding: 2rem;
-    border: 1px solid var(--border-color);
-    width: 90%;
-    max-width: 500px;
-    border-radius: 1rem;
-    position: relative;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-}
-
-.close-modal {
-    color: var(--text-muted);
-    float: top;
-    font-size: 15px;
-    font-weight: bold;
-    cursor: pointer;
-    position: absolute;
-    top: 5px;
-    right: 5px;
-}
-
-.close-modal:hover,
-.close-modal:focus {
-    color: var(--primary-color);
-    text-decoration: none;
-    cursor: pointer;
-}
-
-/* =========================================
-   Mobile / Responsive Design
-   ========================================= */
-@media (max-width: 768px) {
-    .container {
-        padding: 1rem;
-    }
-
-    /* Show User Profile on Mobile as Top Header */
-    /* Show User Profile on Mobile as Top Header (Right Aligned) */
-    .user-profile {
-        display: flex;
-        flex-direction: row;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 60px;
-        background: black;
-        /* Solid background to frame video */
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        z-index: 999;
-        justify-content: flex-end;
-        /* Right Aligned */
-        align-items: center;
-        padding: 0 1rem;
-        gap: 0.8rem;
-        margin: 0;
-        border-radius: 0;
-    }
-
-    .profile-text {
-        text-align: right;
-        align-items: flex-end;
-    }
-
-    .welcome-label {
-        display: block;
-        font-size: 0.6rem;
-        color: rgba(255, 255, 255, 0.8);
-    }
-
-    .username-label {
-        font-size: 1rem;
-    }
-
-    /* Video Frame Between Headers */
-    /* Video Frame Between Headers */
-    .video-feed-container {
-        width: 100%;
-        /* 100vh - Top(60) - Nav(60) - Gap(3) */
-        height: calc(100vh - 123px) !important;
-        margin-top: 60px;
-        padding-bottom: 0px;
-        scroll-snap-type: y mandatory;
-    }
-
-    .video-card {
-        height: 100%;
-        /* Strictly fits the container */
-        padding-block: 0;
-        border-bottom: none;
-        scroll-snap-align: start;
-        scroll-snap-stop: always;
-    }
-
-    .video-frame {
-        border-radius: 0;
-        height: 100%;
-        width: 100%;
-        max-width: none;
-        box-shadow: none;
-    }
-
-    /* Comments Panel - Bottom Sheet on Mobile */
-    .comments-panel {
-        top: auto;
-        bottom: 0;
-        right: 0;
-        /* Reset */
-        left: 0;
-        width: 100%;
-        height: 60vh;
-        border-left: none;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 1rem 1rem 0 0;
-        transform: translateY(100%);
-    }
-
-    .comments-panel.open {
-        transform: translateY(0);
-    }
-
-    /* Transform Sidebar to Bottom Nav (Auto-Hide) */
-    .sidebar {
-        width: 100%;
-        height: 60px;
-        flex-direction: row;
-        border-right: none;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        padding: 0 1rem;
-        justify-content: center;
-        gap: 3rem;
-        background: linear-gradient(to top, rgba(0, 0, 0, 1) 20%, rgba(0, 0, 0, 0.6) 100%);
-        z-index: 1000;
-        backdrop-filter: blur(2px);
-        box-shadow: none;
-
-        /* Animation Logic */
-        transform: translateY(100%);
-        /* Default Hidden */
-        transition: transform 0.3s ease-in-out;
-    }
-
-    .sidebar.visible-nav {
-        transform: translateY(0);
-        /* Show when interacted */
-    }
-
-    .nav-top {
-        flex-direction: row;
-        gap: 3rem;
-        width: auto;
-        justify-content: center;
-    }
-
-    .nav-bottom {
-        margin-top: 0;
-    }
-
-    /* Reset combined styles */
-    .sidebar .nav-top,
-    .sidebar .nav-bottom {
-        flex-direction: row;
-        width: auto;
-        margin: 0;
-    }
-
-    .nav-item {
-        font-size: 1.5rem;
-        width: 44px;
-        height: 44px;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-    }
-
-    /* Adjust Feed for Full Screen */
-    .video-feed-container {
-        width: 90%;
-        height: 90vh;
-        padding-bottom: 0px;
-    }
-
-    /* Adjust Feed for Bottom Nav */
-    .video-feed-container {
-        width: 90%;
-        height: 90vh;
-        /* Takes full viewport */
-        padding-bottom: 0px;
-        /* Full screen video (behind nav) */
-    }
-
-    .video-card {
-        height: 80vh;
-        /* Full viewport height */
-        padding-block: 0;
-        border-bottom: none;
-    }
-
-    .video-frame {
-        border-radius: 0;
-        /* Full screen feel on mobile? Or keep rounded? */
-        /* User asked for rounded edges previously. Let's keep them but maybe less radius? */
-        /* Actually, 9:16 on full phone screen usually implies full bleed. */
-        /* Let's Try: Full width, no rounded corners for immersive mobile feel, 
-           OR keep card style. Let's stick to card style but fit height better. */
-        height: 100%;
-        width: 100%;
-        max-width: none;
-        border-radius: 2rem;
-        /* Full bleed on mobile is standard for TikTok/Reels */
-        box-shadow: none;
-    }
-
-    /* Adjust Actions for Mobile */
-    .actions {
-        padding-bottom: 70px;
-        /* Lift above bottom nav + extra spacing */
-        right: 0;
-    }
-
-    .overlay {
-        bottom: 70px;
-        /* Lift info so it's not behind nav */
-    }
-
-    /* Adjust Upload Modal for Mobile */
-    .modal-content {
-        width: 95%;
-        margin: 5% auto;
-        padding: 1.5rem;
-    }
+.auth-card input:focus {
+    border-color: var(--primary-color);
+    outline: none;
 }

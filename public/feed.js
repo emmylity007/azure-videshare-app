@@ -606,7 +606,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             const videoId = video.getAttribute('data-id');
                             console.log("Triggering view for:", videoId); // Debug
                             if (videoId) {
-                                fetch(`/ api / videos / ${videoId}/view`, { method: 'POST' })
+                                fetch(`/api/videos/${videoId}/view`, { method: 'POST' })
                                     .then(res => res.json())
                                     .then(data => {
                                         console.log("View updated:", data.views); // Debug
